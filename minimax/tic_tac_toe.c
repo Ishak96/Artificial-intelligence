@@ -231,14 +231,14 @@ int f_max(char* board, char player, int* index, int depth, int alpha, int beta)
 					*index = squares[i];
 				}
 			}
-			/*if(alpha < value)
+			if(alpha < value)
 			{
 				alpha = value;
 			}
 			if(alpha >= beta)
 			{
 				break;
-			}*/
+			}
 			board_[squares[i]] = '#';
 		}
 	}
@@ -269,14 +269,14 @@ int f_min(char* board, char player, int* index, int depth, int alpha, int beta)
 			{
 				value = v_;
 			}
-			/*if(beta > value)
+			if(beta > value)
 			{
 				beta = value;
 			}
 			if(alpha >= beta)
 			{
 				break;
-			}*/
+			}
 			board_[squares[i]] = '#';
 		}
 
