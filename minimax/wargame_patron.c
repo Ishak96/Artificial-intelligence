@@ -19,12 +19,14 @@ typedef struct pion_s
 
 int depth;
 Pion *plateauDeJeu;
+int alpha = -2;
+int beta = 1;
 
 void f_affiche_plateau(Pion *plateau);
 int f_convert_char2int(char c);
 char f_convert_int2char(int i);
-int f_max(Pion* jeu, int dep, int joueur, int* i_start, int* j_start, int* i_target, int* j_target);
-int f_min(Pion* jeu, int dep, int joueur, int* i_start, int* j_start, int* i_target, int* j_target);
+int f_max(Pion* jeu, int dep, int joueur, int* i_start, int* j_start, int* i_target, int* j_target, int alpha, int beta);
+int f_min(Pion* jeu, int dep, int joueur, int* i_start, int* j_start, int* i_target, int* j_target, int alpha, int beta);
 
 int f_convert_char2int(char c)
 {
@@ -469,7 +471,7 @@ Pion* f_raz_plateau()
 }
 
 //Fonction min trouve le minimum des noeuds fils
-int f_min(Pion* jeu, int dep, int joueur, int* i_start, int* j_start, int* i_target, int* j_target)
+int f_min(Pion* jeu, int dep, int joueur, int* i_start, int* j_start, int* i_target, int* j_target, int alpha, int beta)
 {
 	if(dep <= 0)
 	{
@@ -496,10 +498,18 @@ int f_min(Pion* jeu, int dep, int joueur, int* i_start, int* j_start, int* i_tar
 
 					if(!f_bouge_piece(jeu_, i, j, _i, _j, -joueur))
 					{
-						int v_ = f_max(jeu_, dep - 1, joueur, NULL, NULL, NULL, NULL);
+						int v_ = f_max(jeu_, dep - 1, joueur, NULL, NULL, NULL, NULL, alpha, beta);
 						if(value > v_)
 						{
 							value = v_;
+						}
+						if(value > alpha)
+						{
+							alpha = value;
+						}
+						if(beta <= alpha)
+						{
+							break;
 						}
 						f_bouge_piece(jeu_, _i, _j, i, j, -joueur);
 					}
@@ -511,7 +521,7 @@ int f_min(Pion* jeu, int dep, int joueur, int* i_start, int* j_start, int* i_tar
 }
 
 //Fonction max trouve le maximum des noeuds fils
-int f_max(Pion* jeu, int dep, int joueur, int* i_start, int* j_start, int* i_target, int* j_target)
+int f_max(Pion* jeu, int dep, int joueur, int* i_start, int* j_start, int* i_target, int* j_target, int alpha, int beta)
 {
 	if(dep <= 0)
 	{
@@ -538,7 +548,7 @@ int f_max(Pion* jeu, int dep, int joueur, int* i_start, int* j_start, int* i_tar
 
 					if(!f_bouge_piece(jeu_, i, j, _i, _j, joueur))
 					{
-						int v_ = f_max(jeu_, dep - 1, joueur, NULL, NULL, NULL, NULL);
+						int v_ = f_max(jeu_, dep - 1, joueur, NULL, NULL, NULL, NULL, alpha, beta);
 						if(value < v_)
 						{
 							value = v_;
@@ -549,6 +559,14 @@ int f_max(Pion* jeu, int dep, int joueur, int* i_start, int* j_start, int* i_tar
 								*i_target = _i;
 								*j_target = _j;
 							}
+						}
+						if(value < beta)
+						{
+							beta = value;
+						}
+						if(beta <= alpha)
+						{
+							break;
 						}
 						f_bouge_piece(jeu_, _i, _j, i, j, joueur);
 					}
@@ -569,7 +587,7 @@ void f_IA(int joueur)
 #endif
 	depth = 3;
 	int i, j, ii, jj;
-	int value = f_max(plateauDeJeu, depth, joueur, &i, &j, &ii, &jj);
+	int value = f_max(plateauDeJeu, depth, joueur, &i, &j, &ii, &jj, alpha, beta);
 	if(!f_bouge_piece(plateauDeJeu, i, j, ii, jj, joueur))
 		printf("IA bouge avec la valeur : %d, i = %d, j = %d, ii = %d, jj = %d\n", value, i, j, ii, jj);
 	else
