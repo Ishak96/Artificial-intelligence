@@ -4,18 +4,19 @@
 
 #define huPlayer 'O'
 #define aiPlayer 'X'
+#define INFINI 10000
 
 #define boxwin(a, param) printf("\033[%dm", a); printf("%c", param); printf("\033[0m");
 
-typedef struct {
-	int score;
-	int index;
-}moves;
-
 //variables globales
-char origBoard[9] = {'O', '#', 'X', 'X', '#', 'X', '#', 'O', '#'};
+char origBoard[9] = {'#', '#', '#', '#', '#', '#', '#', '#', '#'};
+int dep;
 
-int* emptySquares(int* som, char* board){
+int f_min(char* board, char player, int* index, int depth, int alpha, int beta);
+int f_max(char* board, char player, int* index, int depth, int alpha, int beta);
+
+int* emptySquares(int* som, char* board)
+{
 	int tmp = 0;
 	for(int i = 0; i < 9; i++){
 		if(board[i] == '#')
@@ -35,13 +36,16 @@ int* emptySquares(int* som, char* board){
 	return squares;
 }
 
-int checkTie(){
+int checkTie(char* board)
+{
 	int tmp;
-	emptySquares(&tmp, origBoard);
+	emptySquares(&tmp, board);
 	return (tmp == 0);
 }
 
-void teiGame(){
+void teiGame()
+{
+	printf("match nul !\n");
 	for(int i = 0; i < 3; i++){
 		printf("-------\n");
 		for(int j = 0; j < 3; j++) {
@@ -53,7 +57,8 @@ void teiGame(){
 	printf("-------\n");	
 }
 
-void gameOver(char* box, char player){
+void gameOver(char* box, char player)
+{
 	int a;
 	if(player == huPlayer)
 		a = 33;
@@ -81,7 +86,8 @@ void gameOver(char* box, char player){
 
 }
 
-void draw_scene(){
+void draw_scene()
+{
 	for(int i = 0; i < 3; i++){
 		printf("-------\n");
 		for(int j = 0; j < 3; j++) {
@@ -92,7 +98,8 @@ void draw_scene(){
 	printf("-------\n");
 }
 
-int checkWin(char* board, char player,char* box){
+int checkWin(char* board, char player,char* box)
+{
 	char* winning_moves[8] = {
 		"012",
 		"036",
@@ -120,131 +127,239 @@ int checkWin(char* board, char player,char* box){
 	box[0] = grid_space0+'0';
 	box[1] = grid_space1+'0';
 	box[2] = grid_space2+'0';
-	
-	int fact = (player == aiPlayer) ? 2 : 1;
+
+	int fact = (player == huPlayer) ? 1 : -1;
 
 	return end * fact;
 }
 
-moves minimax(char* newBoard, char player){
-	int s;
-	moves m;
-	char* b = malloc(3*sizeof(char));
+int f_bouge(char* board, int index, char player)
+{
+	if(index > 8 || index < 0)
+		return 1;
+	if(board[index] != '#')
+		return 1;
 
-	char* board = malloc(9*sizeof(char));
-	for(int i = 0; i < 9; i++)
-		board[i] = newBoard[i];
+	board[index] = player;
+	return 0;
+}
 
-	int* availSpots = emptySquares(&s, board);
+int f_gagnant(char player)
+{
+	int ret = 0, fin = 0;
+	char box[3];
 
-	if(checkWin(board, player, b)){
-		m.score = -10;
-		return m;
+	ret = checkWin(origBoard, player, box);
+
+	if(ret == 1 || ret == -1)
+	{
+		printf("joueur %c gagne!\n", player);
+		gameOver(box, player);
+		fin = 1;
 	}
-	else if(checkWin(board, aiPlayer, b)){
-		m.score = 10;
-		return m;
-	}
-	else if(s == 0){
-		m.score = 0;
-		return m;
-	}
 
-	moves* move = malloc(s*sizeof(moves));
-	for(int i = 0; i < s; i++){
-		moves m_;
-		m_.index = availSpots[i];
-		board[availSpots[i]] = player;
+	return fin;
+}
 
-		if(player == aiPlayer){
-			moves result = minimax(board, huPlayer);
-			m_.score = result.score;
+char* f_init_board()
+{
+	char* src = (char*)malloc(9 * sizeof(char));
+
+	for(int i = 0; i < 3; i++){
+		for(int j = 0; j < 3; j++) {
+			src[i*3+j] = '#';
 		}
-		else{
-			moves result = minimax(board, aiPlayer);
-			m_.score = result.score;	
+	}
+	return src;
+}
+
+void f_copie_board(char* src, char* dst)
+{
+
+	for(int i = 0; i < 3; i++){
+		for(int j = 0; j < 3; j++) {
+			dst[i*3+j] = src[i*3+j];
 		}
-		move[i] = m_;
+	}
+}
+
+int f_eval(char* board)
+{
+	char box[3];
+	int score;
+
+	if(checkWin(board, huPlayer, box))
+	{
+		score = -10;
+	}
+	else if(checkWin(board, aiPlayer, box))
+	{
+		score = 10;
+	}
+	else
+	{
+		score = 0;
 	}
 
-	int bestMove;
-	if(player = aiPlayer){
-		int bestScore = -10000;
-		for(int i = 0; i < s; i++){
-			if(move[i].score > bestScore){
-				bestScore = move[i].score;
-				bestMove = i;
+	return score;
+}
+
+int f_max(char* board, char player, int* index, int depth, int alpha, int beta)
+{
+	if(depth <= 0 || checkTie(board))
+	{
+		return f_eval(board);
+	}
+
+	char* board_ = f_init_board();
+	f_copie_board(board, board_);
+	int value = -INFINI;
+	int size;
+
+	int* squares = emptySquares(&size, board);
+	for(int i = 0; i < size; i++)
+	{
+		if(!f_bouge(board_, squares[i], player))
+		{
+			char player_ = (player == huPlayer) ? aiPlayer : huPlayer;
+			int v_ = f_min(board_, player_, NULL, depth - 1, alpha, beta);
+			if(value < v_)
+			{
+				value = v_;
+				if(depth == dep)
+				{
+					*index = squares[i];
+				}
 			}
-		}
-	}
-	else{
-		int bestScore = 10000;
-		for(int i = 0; i < s; i++){
-			if(move[i].score < bestScore){
-				bestScore = move[i].score;
-				bestMove = i;
+			/*if(alpha < value)
+			{
+				alpha = value;
 			}
-		}		
-	}
-
-	return move[bestMove];
-}
-
-int bestSpot(){
-	int id = minimax(origBoard, aiPlayer).index;
-	return id;
-}
-
-int turn(int id, char player, char* box){
-	origBoard[id] = player;
-	int w_ = checkWin(origBoard, player, box);
-
-	return w_;
-}
-
-void turnKey(){
-	int fin, replay, end_game, end_game_ai = 0;
-	int id;
-	char* box = malloc(3*sizeof(char));
-	char* box_ia = malloc(3*sizeof(char));
-	do{
-		do{
-			printf("enter your choice\n");	
-			scanf("%d", &id);
-			
-			replay = (id == -1);
-			fin = ( (origBoard[id] == '#') && (id >= 0) && (id <= 8) ) || replay;
-		}while(!fin);
-		
-		if(replay){
-			for(int i = 0; i < 9; i++)
-			origBoard[i] = '#';
+			if(alpha >= beta)
+			{
+				break;
+			}*/
+			board_[squares[i]] = '#';
 		}
-		else{
-			end_game = turn(id, huPlayer, box);
-			if(!checkTie())
-				end_game_ai = turn(bestSpot(), aiPlayer, box_ia);
-			else
-				end_game = end_game_ai = -1;
+	}
+	return value;
+}
+
+int f_min(char* board, char player, int* index, int depth, int alpha, int beta)
+{
+
+	if(depth <= 0 || checkTie(board))
+	{
+		return f_eval(board);
+	}
+
+	char* board_ = f_init_board();
+	f_copie_board(board, board_);
+	int value = INFINI;
+	int size;
+
+	int* squares = emptySquares(&size, board);
+	for(int i = 0; i < size; i++)
+	{
+		if(!f_bouge(board_, squares[i], player))
+		{
+			char player_ = (player == huPlayer) ? aiPlayer : huPlayer;
+			int v_ = f_max(board_, player_, NULL, depth - 1, alpha, beta);
+			if(value > v_)
+			{
+				value = v_;
+			}
+			/*if(beta > value)
+			{
+				beta = value;
+			}
+			if(alpha >= beta)
+			{
+				break;
+			}*/
+			board_[squares[i]] = '#';
 		}
 
-		draw_scene();
-	}while(!end_game && end_game_ai!=2 && end_game!=-1);
+	}
+	return value;
+}
 
-	if(end_game){
-		gameOver(box, huPlayer);
+void humain(char player)
+{
+	int index;
+	char buffer[32];
+
+	printf("joueur %c joue:\n", player);
+	while(1)
+	{
+		fgets(buffer, 32, stdin);
+		if(sscanf(buffer, "%i\n", &index) == 1)
+		{
+			if(f_bouge(origBoard, index, player) == 0)
+				break;
+		}
+		fflush(stdin);
+		printf("mauvais choix\n");
 	}
-	else if(end_game_ai == 2){
-		gameOver(box_ia, aiPlayer);
-	}
-	else if(end_game_ai == -1 || end_game == -1){
-		teiGame();
-	}
+}
+
+void IA(char joueur, int depth, int alpha, int beta)
+{
+	dep = depth;
+	int index;
+	int value = f_max(origBoard, joueur, &index, depth, alpha, beta);
+	if(!f_bouge(origBoard, index, joueur))
+		printf("IA bouge avec la valeur : %d, index = %d\n", value, index);
+	else
+		printf("IA bouge avec la valeur : %d, index = %d\n", value, index);
 }
 
 int main(int argc, char const *argv[])
 {
-	draw_scene();
-	turnKey();
+	int fin = 0, mode=0, ret, alpha = -INFINI, beta = INFINI, profondeur = 5;
+	char player = huPlayer;
+
+	printf("1 humain vs IA\n2 humain vs humain\n3 IA vs IA\n");
+	scanf("%d",&mode);
+
+	while (!fin)
+	{
+		draw_scene();
+		if(mode==1)
+		{
+			if(player == huPlayer)
+			{
+				humain(player);
+				fin = f_gagnant(player);
+			}
+			else
+			{
+				IA(player, profondeur, alpha, beta);
+				fin = f_gagnant(player);
+			}
+		}
+		else if(mode==2)
+		{
+			humain(player);
+			fin = f_gagnant(player);
+		}
+		else
+		{
+			IA(player, profondeur, alpha, beta);
+			fin = f_gagnant(player);
+		}
+
+		if(!fin)
+		{
+			if(checkTie(origBoard))
+			{
+				teiGame();
+				fin = 1;
+			}
+		}
+
+		player = (player == huPlayer) ? aiPlayer : huPlayer;
+	}
+
 	return 0;
 }

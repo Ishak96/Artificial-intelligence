@@ -1,9 +1,7 @@
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <unistd.h>
 
 #define NB_LIGNES 10
 #define NB_COLONNES 10
@@ -19,12 +17,12 @@ typedef struct pion_s
 
 int depth;
 Pion *plateauDeJeu;
-int alpha = -2;
-int beta = 1;
+int node;
 
 void f_affiche_plateau(Pion *plateau);
 int f_convert_char2int(char c);
 char f_convert_int2char(int i);
+int negamax(Pion* jeu, int dep, int joueur, int* i_start, int* j_start, int* i_target, int* j_target, int alpha, int beta);
 int f_max(Pion* jeu, int dep, int joueur, int* i_start, int* j_start, int* i_target, int* j_target, int alpha, int beta);
 int f_min(Pion* jeu, int dep, int joueur, int* i_start, int* j_start, int* i_target, int* j_target, int alpha, int beta);
 
@@ -470,9 +468,69 @@ Pion* f_raz_plateau()
 	return jeu;
 }
 
+//Algorithm optimizations for minimax
+int negamax(Pion* jeu, int dep, int joueur, int* i_start, int* j_start, int* i_target, int* j_target, int alpha, int beta)
+{
+	node += 1;
+	if(dep <= 0)
+	{
+		return joueur * f_eval(jeu, joueur);
+	}
+
+	Pion* jeu_ = f_raz_plateau();
+	f_copie_plateau(jeu, jeu_);
+	int value = -INFINI;
+	int i, j, _i, _j;
+	for (i = 0; i < NB_LIGNES; i++)
+	{
+		for (j = 0; j < NB_COLONNES; j++)
+		{
+			if(jeu[i * NB_COLONNES + j].couleur == joueur)
+			{
+				for(int k = 0; k < 9; k++)
+				{
+					if(k == 4)
+						continue;
+
+					_i = i + k/3 - 1;
+					_j = j + k%3 - 1;
+
+					if(!f_bouge_piece(jeu_, i, j, _i, _j, joueur))
+					{
+						int v_ = negamax(jeu_, dep - 1, -joueur, NULL, NULL, NULL, NULL, -alpha, -beta);
+						if(value < v_)
+						{
+							value = v_;
+							if(dep == depth)
+							{
+								*i_start = i;
+								*j_start = j;
+								*i_target = _i;
+								*j_target = _j;
+							}
+						}
+						/*if(alpha < value)
+						{
+							alpha = value;
+						}
+						if(alpha >= beta)
+						{
+							break;
+						}*/
+						f_bouge_piece(jeu_, _i, _j, i, j, joueur);					}
+				}
+			}
+		}
+	}
+
+	free(jeu_);
+	return value;
+}
+
 //Fonction min trouve le minimum des noeuds fils
 int f_min(Pion* jeu, int dep, int joueur, int* i_start, int* j_start, int* i_target, int* j_target, int alpha, int beta)
 {
+	node += 1;
 	if(dep <= 0)
 	{
 		return f_eval(jeu, joueur);
@@ -503,11 +561,11 @@ int f_min(Pion* jeu, int dep, int joueur, int* i_start, int* j_start, int* i_tar
 						{
 							value = v_;
 						}
-						if(value > alpha)
+						if(beta > value)
 						{
-							alpha = value;
+							beta = value;
 						}
-						if(beta <= alpha)
+						if(alpha >= beta)
 						{
 							break;
 						}
@@ -517,12 +575,15 @@ int f_min(Pion* jeu, int dep, int joueur, int* i_start, int* j_start, int* i_tar
 			}
 		}
 	}
+
+	free(jeu_);
 	return value;
 }
 
 //Fonction max trouve le maximum des noeuds fils
 int f_max(Pion* jeu, int dep, int joueur, int* i_start, int* j_start, int* i_target, int* j_target, int alpha, int beta)
 {
+	node += 1;
 	if(dep <= 0)
 	{
 		return f_eval(jeu, joueur);
@@ -548,7 +609,7 @@ int f_max(Pion* jeu, int dep, int joueur, int* i_start, int* j_start, int* i_tar
 
 					if(!f_bouge_piece(jeu_, i, j, _i, _j, joueur))
 					{
-						int v_ = f_max(jeu_, dep - 1, joueur, NULL, NULL, NULL, NULL, alpha, beta);
+						int v_ = f_min(jeu_, dep - 1, joueur, NULL, NULL, NULL, NULL, alpha, beta);
 						if(value < v_)
 						{
 							value = v_;
@@ -560,11 +621,11 @@ int f_max(Pion* jeu, int dep, int joueur, int* i_start, int* j_start, int* i_tar
 								*j_target = _j;
 							}
 						}
-						if(value < beta)
+						if(alpha < value)
 						{
-							beta = value;
+							alpha = value;
 						}
-						if(beta <= alpha)
+						if(alpha >= beta)
 						{
 							break;
 						}
@@ -574,20 +635,22 @@ int f_max(Pion* jeu, int dep, int joueur, int* i_start, int* j_start, int* i_tar
 			}
 		}
 	}
+
+	free(jeu_);
 	return value;
 }
 
 /**
  * Calcule et joue le meilleur cout
  * */
-void f_IA(int joueur)
+void f_IA(int joueur, int dep, int alpha, int beta)
 {
 #ifdef DEBUG
 	printf("dbg: entering %s %d\n", __FUNCTION__, __LINE__);
 #endif
-	depth = 3;
+	depth = dep;
 	int i, j, ii, jj;
-	int value = f_max(plateauDeJeu, depth, joueur, &i, &j, &ii, &jj, alpha, beta);
+	int value = f_max(plateauDeJeu, dep, joueur, &i, &j, &ii, &jj, alpha, beta);
 	if(!f_bouge_piece(plateauDeJeu, i, j, ii, jj, joueur))
 		printf("IA bouge avec la valeur : %d, i = %d, j = %d, ii = %d, jj = %d\n", value, i, j, ii, jj);
 	else
@@ -645,48 +708,65 @@ void f_humain(int joueur)
 
 int main(int argv, char *argc[])
 {
-	int fin = 0,mode=0 , ret, joueur = 1;
-	printf("1 humain vs IA\n2 humain vs humain\n3 IA vs IA\n");
-	scanf("%d",&mode);
+	int profondeur_MAX = 4;
+	int data[profondeur_MAX][2];
 
-	plateauDeJeu = f_init_plateau();
-	while (!fin)
+	/*printf("1 humain vs IA\n2 humain vs humain\n3 IA vs IA\n");
+	scanf("%d",&mode);*/
+
+	for(int profondeur = 1; profondeur <= profondeur_MAX; profondeur++)
 	{
-		f_affiche_plateau(plateauDeJeu);
-		if(mode==1)
+		int fin, mode=3, ret, joueur = 1, alpha = -INFINI, beta = INFINI;
+		plateauDeJeu = f_init_plateau();
+		node = 0;
+		fin = 0;
+		while (!fin)
 		{
-			if(joueur>0)
-				f_humain(joueur);
-			else
-				f_IA(joueur);
-		}
-		else if(mode==2)
-		{
-			f_humain(joueur);
-		}
-		else
-		{
-			f_IA(joueur);
-		}
-
-		if ((ret = f_gagnant()) != 0)
-		{
-			switch (ret)
+			f_affiche_plateau(plateauDeJeu);
+			if(mode==1)
 			{
-			case 1:
-				f_affiche_plateau(plateauDeJeu);
-				printf("joueur x gagne!\n");
-				fin = 1;
-				break;
-			case -1:
-				f_affiche_plateau(plateauDeJeu);
-				printf("joueur o gagne!\n");
-				fin = 1;
-				break;
+				if(joueur>0)
+					f_humain(joueur);
+				else
+					f_IA(joueur, profondeur, alpha, beta);
 			}
+			else if(mode==2)
+			{
+				f_humain(joueur);
+			}
+			else
+			{
+				f_IA(joueur, profondeur, alpha, beta);
+			}
+
+			if ((ret = f_gagnant()) != 0)
+			{
+				switch (ret)
+				{
+				case 1:
+					f_affiche_plateau(plateauDeJeu);
+					printf("joueur x gagne!\n");
+					fin = 1;
+					break;
+				case -1:
+					f_affiche_plateau(plateauDeJeu);
+					printf("joueur o gagne!\n");
+					fin = 1;
+					break;
+				}
+			}
+			joueur = -joueur;
 		}
-		joueur = -joueur;
+		data[profondeur - 1][0] = profondeur;
+		data[profondeur - 1][1] = node;
 	}
+
+	FILE* file=fopen("data_minimax_alphabeta_analyse.dat", "w+");
+	
+	for(int i = 0; i < profondeur_MAX; i++)
+		fprintf(file, "%d %d\n", data[i][0], data[i][1]);
+	
+	fclose(file);
 
 #ifdef DEBUG
 	printf("dbg: exiting %s %d\n", __FUNCTION__, __LINE__);
