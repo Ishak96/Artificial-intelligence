@@ -175,7 +175,6 @@ char* f_init_board()
 
 void f_copie_board(char* src, char* dst)
 {
-
 	for(int i = 0; i < 3; i++){
 		for(int j = 0; j < 3; j++) {
 			dst[i*3+j] = src[i*3+j];
@@ -190,18 +189,14 @@ int f_eval(char* board)
 
 	if(checkWin(board, huPlayer, box))
 	{
-		score = -10;
+		return -10;
 	}
 	else if(checkWin(board, aiPlayer, box))
 	{
-		score = 10;
-	}
-	else
-	{
-		score = 0;
+		return 10;
 	}
 
-	return score;
+	return 0;
 }
 
 int f_max(char* board, char player, int* index, int depth, int alpha, int beta)
@@ -237,7 +232,8 @@ int f_max(char* board, char player, int* index, int depth, int alpha, int beta)
 			}
 			if(alpha >= beta)
 			{
-				break;
+				free(board_);
+				return value;
 			}
 			board_[squares[i]] = '#';
 		}
@@ -275,7 +271,8 @@ int f_min(char* board, char player, int* index, int depth, int alpha, int beta)
 			}
 			if(alpha >= beta)
 			{
-				break;
+				free(board_);
+				return value;
 			}
 			board_[squares[i]] = '#';
 		}
@@ -316,7 +313,7 @@ void IA(char joueur, int depth, int alpha, int beta)
 
 int main(int argc, char const *argv[])
 {
-	int fin = 0, mode=0, ret, alpha = -INFINI, beta = INFINI, profondeur = 5;
+	int fin = 0, mode=0, ret, alpha = -INFINI, beta = INFINI, profondeur = 100;
 	char player = huPlayer;
 
 	printf("1 humain vs IA\n2 humain vs humain\n3 IA vs IA\n");
