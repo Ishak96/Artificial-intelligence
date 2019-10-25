@@ -505,11 +505,12 @@ Pion* f_raz_plateau()
 //Algorithm optimizations for minimax
 int negamax(Pion* jeu, int dep, int joueur, int alpha, int beta)
 {
-	node += 1;
 	if(dep <= 0)
 	{
 		return f_eval(jeu, joueur);
 	}
+
+	node += 1;
 
 	Pion* jeu_ = f_raz_plateau();
 	f_copie_plateau(jeu, jeu_);
@@ -570,11 +571,12 @@ int negamax(Pion* jeu, int dep, int joueur, int alpha, int beta)
 //Fonction min trouve le minimum des noeuds fils
 int f_min(Pion* jeu, int dep, int joueur, int alpha, int beta)
 {
-	node += 1;
 	if(dep <= 0)
 	{
 		return f_eval(jeu, joueur);
 	}
+
+	node += 1;
 
 	Pion* jeu_ = f_raz_plateau();
 	f_copie_plateau(jeu, jeu_);
@@ -628,11 +630,12 @@ int f_min(Pion* jeu, int dep, int joueur, int alpha, int beta)
 //Fonction max trouve le maximum des noeuds fils
 int f_max(Pion* jeu, int dep, int joueur, int alpha, int beta)
 {
-	node += 1;
 	if(dep <= 0)
 	{
 		return f_eval(jeu, joueur);
 	}
+
+	node += 1;
 
 	Pion* jeu_ = f_raz_plateau();
 	f_copie_plateau(jeu, jeu_);
@@ -766,7 +769,7 @@ int main(int argv, char *argc[])
 {
 	srand(time(0));
 
-	int profondeur_MAX = 4;
+	int profondeur_MAX = 6;
 	int prof = 3;
 	int nb_pion;
 	int amelioration;
@@ -852,7 +855,7 @@ int main(int argv, char *argc[])
 		if(test == 1)
 		{
 			data[profondeur - 1][0] = profondeur;
-			data[profondeur - 1][1] = node;			
+			data[profondeur - 1][1] = node / 1000;			
 		}
 		else
 		{
