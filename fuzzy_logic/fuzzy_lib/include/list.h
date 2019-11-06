@@ -27,6 +27,7 @@ int compare_linguistic_value(TElement element1, TElement element2);
 /*afficher les valeurs des differentes cellules de la liste*/
 void affInt(TElement elem);
 void affcoordinates(TElement elem);
+void afffuzzy_value(TElement elem);
 void affListe(liste l, print_element aff_function);
 void afflinguistic_value(TElement elem);
 

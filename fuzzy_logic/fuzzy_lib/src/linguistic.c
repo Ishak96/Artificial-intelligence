@@ -20,7 +20,7 @@ linguistic_variable initLinguistic_variable(char* name, float* univers_discourse
 }
 
 liste get_coordinates(coordinates A, coordinates B, function_eval function, int linear){
-	float inc = 0.1f;
+	float inc = 0.5f;
 	float a, b;
 	coordinates c;
 	liste coordinates_liste = initListe();
@@ -89,8 +89,19 @@ void afflinguistic_variable(linguistic_variable l_variable){
 }
 
 void clearlinguistic_variable(linguistic_variable *l_variable){
-	suppListe(&(l_variable->values_liste));
+	
+	liste values_liste = l_variable->values_liste;
+	if(!videListe(values_liste)){
+		while(!videListe(values_liste)){
+			linguistic_value l_value = *(linguistic_value *)valCellule(values_liste);
+			liste coordinates_liste = l_value.coordinates_liste;
+			
+			suppListe(&coordinates_liste);
+			values_liste = suivCellule(values_liste);
+		}
+	}
 
+	suppListe(&(l_variable->values_liste));
 	if(l_variable->univers_discourse)
 		free(l_variable->univers_discourse);
 	if(l_variable->variable_name)

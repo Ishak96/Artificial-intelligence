@@ -54,6 +54,11 @@ void affcoordinates(TElement elem){
 	printf("{%f, %f} ", element.x, element.y);
 }
 
+void afffuzzy_value(TElement elem){
+	fuzzy_value element = *( fuzzy_value*)elem;
+	printf("{%f in %s}\t", element.value, element.name_linguistic_value);
+}
+
 void affListe(liste l, print_element aff_function){
 	
 	while(!videListe(l)){

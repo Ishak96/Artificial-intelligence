@@ -24,6 +24,11 @@ typedef struct{
 	float* univers_discourse;
 }linguistic_variable;
 
+typedef struct {
+	char* name_linguistic_value;
+	float value;
+}fuzzy_value;
+
 typedef void (*print_element)(void* element);
 typedef int (*compare_element)(void* element1,void* element2);
 typedef float (*function_eval)(float x);
