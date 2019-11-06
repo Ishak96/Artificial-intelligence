@@ -58,7 +58,7 @@ linguistic_value get_trapezoidal_function(char* name, coordinates trapez[4]){
 		else{
 			coordinates_liste = get_coordinates(A, B, NULL, 1);
 		}
-		concatListe(&(l_value.coordinates_liste),&coordinates_liste,compare_coordinates);
+		concatListe(&(l_value.coordinates_liste),&coordinates_liste,compare_coordinates, size_coordinates);
 	}
 
 	return l_value;
@@ -88,22 +88,22 @@ void afflinguistic_variable(linguistic_variable l_variable){
 	printf("]\n");
 }
 
-void clearlinguistic_variable(linguistic_variable *l_variable){
+void clearlinguistic_value(linguistic_value* l_value){
+	liste coordinates_liste = l_value->coordinates_liste;
+	suppListe(&coordinates_liste);
+}
+
+void clearlinguistic_variable(linguistic_variable* l_variable){
 	
 	liste values_liste = l_variable->values_liste;
 	if(!videListe(values_liste)){
 		while(!videListe(values_liste)){
 			linguistic_value l_value = *(linguistic_value *)valCellule(values_liste);
-			liste coordinates_liste = l_value.coordinates_liste;
-			
-			suppListe(&coordinates_liste);
+			clearlinguistic_value(&l_value);
+
 			values_liste = suivCellule(values_liste);
 		}
 	}
 
 	suppListe(&(l_variable->values_liste));
-	if(l_variable->univers_discourse)
-		free(l_variable->univers_discourse);
-	if(l_variable->variable_name)
-		free(l_variable->variable_name);
 }

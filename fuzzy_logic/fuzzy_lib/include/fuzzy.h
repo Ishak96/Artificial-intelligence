@@ -10,6 +10,9 @@
 #include<list.h>
 #include<unistd.h>
 
+fuzzy insert_fuzzy_varaibles(linguistic_variable* input, linguistic_variable* output, int nb_input, int nb_output);
 liste fuzzyfication(linguistic_variable l_variable, float input);
+void fuzzy_all(fuzzy* fuzzy_set, crispy_fuzzy_value* input, int nb_input);
+void clearfuzzy(fuzzy* fuzzy_set);
 
 #endif

@@ -23,6 +23,13 @@ int videListe(liste l){
 }
 
 /*comparaison des element*/
+int compare_crispy_fuzzy_value(TElement element1, TElement element2){
+	crispy_fuzzy_value elem1 = *( crispy_fuzzy_value*)element1;
+	crispy_fuzzy_value elem2 = *( crispy_fuzzy_value*)element2;
+
+	return (elem1.value == elem2.value) && (!strcmp(elem1.value_name, elem2.value_name))
+			&& (!strcmp(elem1.variable_name, elem2.variable_name));
+}
 int compare_int(TElement element1, TElement element2){
 	int elem1 = *( int*)element1;
 	int elem2 = *( int*)element2;
@@ -55,8 +62,13 @@ void affcoordinates(TElement elem){
 }
 
 void afffuzzy_value(TElement elem){
-	fuzzy_value element = *( fuzzy_value*)elem;
-	printf("{%f in %s}\t", element.value, element.name_linguistic_value);
+	crispy_fuzzy_value element = *( crispy_fuzzy_value*)elem;
+	printf("{%f in %s}\t", element.value, element.value_name);
+}
+
+void afffuzzy_result(TElement elem){
+	crispy_fuzzy_value element = *( crispy_fuzzy_value*)elem;
+	printf("|for %s -> {%f in %s}|\t",element.variable_name, element.value, element.value_name);
 }
 
 void affListe(liste l, print_element aff_function){
@@ -112,7 +124,7 @@ liste cel;
 	//création de la cellule
 
 	cel = (liste) malloc (sizeof(struct Cellule));
-	cel->donnee= malloc (taile_TElement);
+	cel->donnee = malloc (taile_TElement);
 
 	//remplissage de la cellule
 
@@ -160,12 +172,11 @@ liste cel;
 
 liste der;
 
-	der = dernierCel(*l);
-
-	if(der == NULL){
+	if(videListe(*l)){
 		inserTete(X,l,taile_TElement);
 	}
 	else{
+		der = dernierCel(*l);
 		//creation de la cellule
 		cel = (liste) malloc (sizeof(struct Cellule));
 		cel->donnee = malloc (taile_TElement);
@@ -273,14 +284,14 @@ liste adresseVal(TElement X,liste l,compare_element cmpr_function){
 
 /*Concatenation avec destruction des listes initiale*/
 
-void concatListe(liste *l1,liste *l2,compare_element cmpr_function){
+void concatListe(liste *l1,liste *l2,compare_element cmpr_function, int size){
 
 	if(videListe(*l1))
 		*l1 = *l2;
 	else{
 		while(!videListe(*l2)){
 			if(!existVal(valCellule(*l2),*l1,cmpr_function))
-				inserTete(valCellule(*l2),l1,sizeof(valCellule(*l2)));
+				inserTete(valCellule(*l2),l1,size);
 			*l2 = suivCellule(*l2);
 		}
 	}

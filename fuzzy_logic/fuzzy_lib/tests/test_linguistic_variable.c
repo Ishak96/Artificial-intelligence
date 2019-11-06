@@ -6,35 +6,106 @@ int main(int argc, char **argv){
 	printf("test for a linguistic variable\n");
 	printf("-----------------------\n");
 
-	linguistic_variable l_variable;
-	int nb_l_values = 2;
-	linguistic_value l_values[nb_l_values];
+	linguistic_variable l_variable1, l_variable2, l_variable3;
+	int nb_l_values;
 	float univers_discourse[2] = {0, 100};
+
+	// Projetc staffing
+	nb_l_values = 2;
+	linguistic_value l_values1[nb_l_values];
 
 	coordinates A = {0.f, 0.f};
 	coordinates B = {0.f, 1.f};
 	coordinates C = {20.f, 1.f};
 	coordinates D = {70.f, 0.f};
-	coordinates trapez1[4] = {A, B, C, D};
+	coordinates trapez1_1[4] = {A, B, C, D};
 
-	l_values[0] = get_trapezoidal_function("small", trapez1);
+	l_values1[0] = get_trapezoidal_function("small", trapez1_1);
 
-	coordinates A_ = {30.f, 0.f};
-	coordinates B_ = {80.f, 1.f};
-	coordinates C_ = {100.f, 1.f};
-	coordinates D_ = {100.f, 0.f};
-	coordinates trapez2[4] = {A_, B_, C_, D_};
+	coordinates A1 = {30.f, 0.f};
+	coordinates B1 = {80.f, 1.f};
+	coordinates C1 = {100.f, 1.f};
+	coordinates D1 = {100.f, 0.f};
+	coordinates trapez2_1[4] = {A1, B1, C1, D1};
 	
-	l_values[1] = get_trapezoidal_function("large", trapez2);
+	l_values1[1] = get_trapezoidal_function("large", trapez2_1);
+
+	l_variable1 = creatlinguistic_variable("Project staffing", l_values1, univers_discourse, nb_l_values);
+
+	// Projetc funding
+	nb_l_values = 3;
+	linguistic_value l_values2[nb_l_values];
+	A.x = 0.f; A.y = 0.f;
+	B.x = 0.f; B.y = 1.f;
+	C.x = 30.f; C.y = 1.f;
+	D.x = 50.f; D.y = 0.f;
+	coordinates trapez1_2[4] = {A, B, C, D};
+
+	l_values2[0] = get_trapezoidal_function("inadequate", trapez1_2);
+
+	A1.x = 37.5f; A1.y = 0.f;
+	B1.x = 40.f; B1.y = 0.8f;
+	C1.x = 50.f; C1.y = 1.f;
+	D1.x = 62.f; D1.y = 0.f;
+	coordinates trapez2_2[4] = {A1, B1, C1, D1};
 	
-	l_variable = creatlinguistic_variable("Project staffing", l_values, univers_discourse, nb_l_values);
+	l_values2[1] = get_trapezoidal_function("marjinal", trapez2_2);
 
-	//afflinguistic_variable(l_variable);
+	coordinates A2 = {50.f, 0.f};
+	coordinates B2 = {70.f, 1.f};
+	coordinates C2 = {100.f, 1.f};
+	coordinates D2 = {100.f, 0.f};
+	coordinates trapez3_2[4] = {A2, B2, C2, D2};
 
-	float input = 0;
-	liste fuzzied = fuzzyfication(l_variable, input);
+	l_values2[2] = get_trapezoidal_function("adequate", trapez3_2);
+	
+	l_variable2 = creatlinguistic_variable("Project funding", l_values2, univers_discourse, nb_l_values);
 
-	affListe(fuzzied, afffuzzy_value);
+	// Projetc risk
+	nb_l_values = 3;
+	linguistic_value l_values3[nb_l_values];
+	A.x = 0.f; A1.y = 0.f;
+	B.x = 0.f; B1.y = 1.f;
+	C.x = 20.f; C.y = 1.f;
+	D.x = 40.f; D.y =  0.f;
+	coordinates trapez1_3[4] = {A, B, C, D};
+
+	l_values3[0] = get_trapezoidal_function("low", trapez1_3);
+
+	A1.x = 25.5f; A1.y = 0.f;
+	B1.x = 40.f; B1.y = 1.f;
+	C1.x = 52.f; C1.y = 1.f;
+	D1.x = 72.f; D1.y = 0.f;
+	coordinates trapez2_3[4] = {A1, B1, C1, D1};
+	
+	l_values3[1] = get_trapezoidal_function("normal", trapez2_3);
+
+	A2.x = 60.f; A2.y = 0.f;
+	B2.x = 80.f; B2.y = 1.f;
+	C2.x = 100.f; C2.y = 1.f;
+	D2.x = 100.f; D2.y = 0.f;
+	coordinates trapez3_3[4] = {A2, B2, C2, D2};
+
+	l_values3[2] = get_trapezoidal_function("high", trapez3_3);
+	
+	l_variable3 = creatlinguistic_variable("Project risk", l_values3, univers_discourse, nb_l_values);
+
+	//fuzzy
+	linguistic_variable input_l_v[2] = {l_variable1, l_variable2};
+	linguistic_variable output_l_v[1] = {l_variable3};
+	fuzzy fuzzy_univers = insert_fuzzy_varaibles(input_l_v, output_l_v, 2, 1);
+
+	int nb_input = 2;
+	crispy_fuzzy_value input1 = {"", "Project funding", 40};
+	crispy_fuzzy_value input2 = {"", "Project staffing", 65};
+	crispy_fuzzy_value input[nb_input];
+	input[0] = input1;
+	input[1] = input2;
+
+	fuzzy_all(&fuzzy_univers, input, nb_input);
+	affListe(fuzzy_univers.fuzzy_result_liste, afffuzzy_result);
+
+	clearfuzzy(&fuzzy_univers);
 
 	return 0;
 }

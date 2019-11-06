@@ -16,6 +16,7 @@ linguistic_value get_trapezoidal_function(char* name, coordinates trapez[4]);
 linguistic_variable creatlinguistic_variable(char* name, linguistic_value* l_values, 
 	float* univers_discourse , int nb_l_value);
 void afflinguistic_variable(linguistic_variable l_variable);
-void clearlinguistic_variable(linguistic_variable *l_variable);
+void clearlinguistic_value(linguistic_value* l_value);
+void clearlinguistic_variable(linguistic_variable* l_variable);
 
 #endif

@@ -20,6 +20,7 @@ liste initListe();
 int videListe(liste l);
 
 /*comparaison des element*/
+int compare_crispy_fuzzy_value(TElement element1, TElement element2);
 int compare_int(TElement element1, TElement element2);
 int compare_coordinates(TElement element1, TElement element2);
 int compare_linguistic_value(TElement element1, TElement element2);
@@ -28,6 +29,7 @@ int compare_linguistic_value(TElement element1, TElement element2);
 void affInt(TElement elem);
 void affcoordinates(TElement elem);
 void afffuzzy_value(TElement elem);
+void afffuzzy_result(TElement elem);
 void affListe(liste l, print_element aff_function);
 void afflinguistic_value(TElement elem);
 
@@ -68,6 +70,6 @@ int existVal(TElement X,liste l,compare_element cmpr_function);
 liste adresseVal(TElement X,liste l,compare_element cmpr_function);
 
 /*Concatenation avec destruction des listes initiale*/
-void concatListe(liste *l1,liste *l2,compare_element cmpr_function);
+void concatListe(liste *l1,liste *l2,compare_element cmpr_function, int size);
 
 #endif

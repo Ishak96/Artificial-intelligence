@@ -25,9 +25,16 @@ typedef struct{
 }linguistic_variable;
 
 typedef struct {
-	char* name_linguistic_value;
+	char* value_name;
+	char* variable_name;
 	float value;
-}fuzzy_value;
+}crispy_fuzzy_value;
+
+typedef struct{
+	liste fuzzy_result_liste;
+	liste input_linguistic_variable;
+	liste output_linguistic_variable;
+}fuzzy;
 
 typedef void (*print_element)(void* element);
 typedef int (*compare_element)(void* element1,void* element2);
