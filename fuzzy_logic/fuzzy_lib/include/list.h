@@ -6,21 +6,7 @@
 #include<time.h>
 #include<string.h>
 #include<malloc.h>
-
-typedef void* TElement;
-
-typedef struct Cellule{
-	TElement donnee;
-	struct Cellule *suivant;
-}*liste;
-
-typedef struct {
-	float x;
-	float y;
-}coordinates;
-
-typedef void (*print_element)(void* element);
-typedef int (*compare_element)(void* element1,void* element2);
+#include <struct.h>
 
 /*(1)premitive*/
 TElement valCellule(liste l);
@@ -36,11 +22,13 @@ int videListe(liste l);
 /*comparaison des element*/
 int compare_int(TElement element1, TElement element2);
 int compare_coordinates(TElement element1, TElement element2);
+int compare_linguistic_value(TElement element1, TElement element2);
 
 /*afficher les valeurs des differentes cellules de la liste*/
 void affInt(TElement elem);
 void affcoordinates(TElement elem);
 void affListe(liste l, print_element aff_function);
+void afflinguistic_value(TElement elem);
 
 /*determine la longueur d'une liste*/
 int longListe(liste l);
@@ -79,6 +67,6 @@ int existVal(TElement X,liste l,compare_element cmpr_function);
 liste adresseVal(TElement X,liste l,compare_element cmpr_function);
 
 /*Concatenation avec destruction des listes initiale*/
-void concatListe(liste *l1,liste *l2);
+void concatListe(liste *l1,liste *l2,compare_element cmpr_function);
 
 #endif

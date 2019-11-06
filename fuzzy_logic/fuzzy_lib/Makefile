@@ -10,7 +10,7 @@ INCDIR=include
 TESTDIR=tests
 OBJDIR=obj
 
-CFLAGS=-Wall -I$(INCDIR)
+CFLAGS=-Wall -I$(INCDIR) -g
 
 # getting source files and obj names
 SOURCES  := $(wildcard $(SRCDIR)/*.c)

@@ -37,6 +37,13 @@ int compare_coordinates(TElement element1, TElement element2){
 	return (elem1.x - elem2.x) + (elem1.y - elem2.y) == 0.000000000f;
 }
 
+int compare_linguistic_value(TElement element1, TElement element2){
+	linguistic_value elem1 = *( linguistic_value*)element1;
+	linguistic_value elem2 = *( linguistic_value*)element2;
+
+	return !strcmp(elem1.value_name, elem2.value_name);
+}
+
 /*afficher les valeurs des differentes cellules de la liste*/
 void affInt(TElement elem){
 	printf("%d ", *( int*)elem);
@@ -54,6 +61,16 @@ void affListe(liste l, print_element aff_function){
 		l = suivCellule(l);
 	}
 	printf("\n");
+}
+
+void afflinguistic_value(TElement elem){
+	linguistic_value element = *( linguistic_value*)elem;
+	liste coordinates_liste = element.coordinates_liste;
+
+	printf("-----------------------\n");
+	printf("Linguistic value [%s]-->[\n", element.value_name);
+	affListe(coordinates_liste, affcoordinates);
+	printf("]\n");
 }
 
 /*determine la longueur d'une liste*/
@@ -108,6 +125,10 @@ liste cel;
 
 liste dernierCel(liste l){
 	
+	if(videListe(l)){
+		return NULL;
+	}
+
 	while(!videListe(l->suivant)){
 		l = suivCellule(l);
 	}
@@ -136,20 +157,22 @@ liste der;
 
 	der = dernierCel(*l);
 
-	//creation de la cellule
+	if(der == NULL){
+		inserTete(X,l,taile_TElement);
+	}
+	else{
+		//creation de la cellule
+		cel = (liste) malloc (sizeof(struct Cellule));
+		cel->donnee = malloc (taile_TElement);
 
-	cel = (liste) malloc (sizeof(struct Cellule));
-	cel->donnee= malloc (taile_TElement);
+		//remplissage de la cellule
+		memcpy(cel->donnee, X, taile_TElement);
 
-	//remplissage de la cellule
+		//chainage
+		cel->suivant = NULL;
 
-	memcpy(cel->donnee, X, taile_TElement);
-
-	//chainage
-
-	cel->suivant = NULL;
-
-	der->suivant = cel;
+		der->suivant = cel;
+	}
 
 }
 
@@ -245,14 +268,16 @@ liste adresseVal(TElement X,liste l,compare_element cmpr_function){
 
 /*Concatenation avec destruction des listes initiale*/
 
-void concatListe(liste *l1,liste *l2){
-	liste der;
+void concatListe(liste *l1,liste *l2,compare_element cmpr_function){
 
 	if(videListe(*l1))
 		*l1 = *l2;
 	else{
-		der = dernierCel(*l1);
-		der->suivant = *l2;
+		while(!videListe(*l2)){
+			if(!existVal(valCellule(*l2),*l1,cmpr_function))
+				inserTete(valCellule(*l2),l1,sizeof(valCellule(*l2)));
+			*l2 = suivCellule(*l2);
+		}
 	}
 	*l2 = initListe();
 }
