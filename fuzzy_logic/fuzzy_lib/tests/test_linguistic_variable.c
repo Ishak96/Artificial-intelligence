@@ -12,83 +12,68 @@ int main(int argc, char **argv){
 
 	// Projetc staffing
 	nb_l_values = 2;
-	linguistic_value l_values1[nb_l_values];
-
 	coordinates A = {0.f, 0.f};
 	coordinates B = {0.f, 1.f};
 	coordinates C = {20.f, 1.f};
 	coordinates D = {70.f, 0.f};
 	coordinates trapez1_1[4] = {A, B, C, D};
 
-	l_values1[0] = get_trapezoidal_function("small", trapez1_1);
-
 	coordinates A1 = {30.f, 0.f};
 	coordinates B1 = {80.f, 1.f};
 	coordinates C1 = {100.f, 1.f};
 	coordinates D1 = {100.f, 0.f};
 	coordinates trapez2_1[4] = {A1, B1, C1, D1};
-	
-	l_values1[1] = get_trapezoidal_function("large", trapez2_1);
 
-	l_variable1 = creatlinguistic_variable("Project staffing", l_values1, univers_discourse, nb_l_values);
+	creatlinguistic_variable(nb_l_values, "Project staffing", univers_discourse, &l_variable1,
+	 	get_trapezoidal_function("small", trapez1_1), get_trapezoidal_function("large", trapez2_1));
 
 	// Projetc funding
 	nb_l_values = 3;
-	linguistic_value l_values2[nb_l_values];
 	A.x = 0.f; A.y = 0.f;
 	B.x = 0.f; B.y = 1.f;
 	C.x = 30.f; C.y = 1.f;
 	D.x = 50.f; D.y = 0.f;
 	coordinates trapez1_2[4] = {A, B, C, D};
 
-	l_values2[0] = get_trapezoidal_function("inadequate", trapez1_2);
-
 	A1.x = 30.f; A1.y = 0.f;
 	B1.x = 50.f; B1.y = 1.f;
 	C1.x = 50.f; C1.y = 1.f;
 	D1.x = 70.f; D1.y = 0.f;
 	coordinates trapez2_2[4] = {A1, B1, C1, D1};
-	
-	l_values2[1] = get_trapezoidal_function("marjinal", trapez2_2);
 
 	coordinates A2 = {50.f, 0.f};
 	coordinates B2 = {70.f, 1.f};
 	coordinates C2 = {100.f, 1.f};
 	coordinates D2 = {100.f, 0.f};
 	coordinates trapez3_2[4] = {A2, B2, C2, D2};
-
-	l_values2[2] = get_trapezoidal_function("adequate", trapez3_2);
 	
-	l_variable2 = creatlinguistic_variable("Project funding", l_values2, univers_discourse, nb_l_values);
+	creatlinguistic_variable(nb_l_values, "Project funding", univers_discourse, &l_variable2, 
+		get_trapezoidal_function("inadequate", trapez1_2), get_trapezoidal_function("marjinal", trapez2_2),
+		get_trapezoidal_function("adequate", trapez3_2));
 
 	// Projetc risk
 	nb_l_values = 3;
-	linguistic_value l_values3[nb_l_values];
 	A.x = 0.f; A1.y = 0.f;
 	B.x = 0.f; B1.y = 1.f;
 	C.x = 20.f; C.y = 1.f;
 	D.x = 40.f; D.y =  0.f;
 	coordinates trapez1_3[4] = {A, B, C, D};
 
-	l_values3[0] = get_trapezoidal_function("low", trapez1_3);
-
 	A1.x = 25.5f; A1.y = 0.f;
 	B1.x = 40.f; B1.y = 1.f;
 	C1.x = 52.f; C1.y = 1.f;
 	D1.x = 72.f; D1.y = 0.f;
 	coordinates trapez2_3[4] = {A1, B1, C1, D1};
-	
-	l_values3[1] = get_trapezoidal_function("normal", trapez2_3);
 
 	A2.x = 60.f; A2.y = 0.f;
 	B2.x = 80.f; B2.y = 1.f;
 	C2.x = 100.f; C2.y = 1.f;
 	D2.x = 100.f; D2.y = 0.f;
 	coordinates trapez3_3[4] = {A2, B2, C2, D2};
-
-	l_values3[2] = get_trapezoidal_function("high", trapez3_3);
 	
-	l_variable3 = creatlinguistic_variable("Project risk", l_values3, univers_discourse, nb_l_values);
+	creatlinguistic_variable(nb_l_values, "Project risk", univers_discourse, &l_variable3, 
+		get_trapezoidal_function("low", trapez1_3), get_trapezoidal_function("normal", trapez2_3),
+		get_trapezoidal_function("high", trapez3_3));
 
 	//fuzzy
 
@@ -103,9 +88,46 @@ int main(int argc, char **argv){
 	fuzzy_all(nb_input ,&fuzzy_univers, input1, input2);
 	affListe(fuzzy_univers.fuzzy_result_liste, afffuzzy_result);
 
-	/*fuzzy_controler cond1 = {"adequate", "Project funding", 0.f, "OR"};
-	fuzzy_controler cond2 = {"small", "Project staffing", 0.f, ""};*/
+	rules r1;
+	init_rules(&r1);
+	
+	fuzzy_controler cond1 = {"adequate", "Project funding", 0.f, "OR"};
+	fuzzy_controler cond2 = {"small", "Project staffing", 0.f, ""};
+	fuzzy_controler dedu1 = {"low", "Project risk", 0.f, ""};
 
+	r1.deduction = dedu1;
+	insert_values_into_liste(2, sizeof(fuzzy_controler), &(r1.conditions), &cond1, &cond2);
+
+	rules r2;
+	init_rules(&r2);
+	
+	fuzzy_controler cond1_2 = {"marjinal", "Project funding", 0.f, "AND"};
+	fuzzy_controler cond2_2 = {"large", "Project staffing", 0.f, ""};
+	fuzzy_controler dedu2 = {"normal", "Project risk", 0.f, ""};
+
+	r2.deduction = dedu2;
+	insert_values_into_liste(2, sizeof(fuzzy_controler), &(r2.conditions), &cond1_2, &cond2_2);
+
+	rules r3;
+	init_rules(&r3);
+	
+	fuzzy_controler cond1_3 = {"inadequate", "Project funding", 0.f, ""};
+	fuzzy_controler dedu3 = {"high", "Project risk", 0.f, ""};
+
+	r3.deduction = dedu3;
+	insert_values_into_liste(1, sizeof(fuzzy_controler), &(r3.conditions), &cond1_3);
+
+	liste rules_liste = initListe();
+	insert_values_into_liste(3, sizeof(rules), &rules_liste, &r1, &r2, &r3);
+
+	liste result_apply_rules = apply_rules(rules_liste, fuzzy_univers.fuzzy_result_liste);
+	affListe(result_apply_rules, afffuzzy_result);
+
+	suppListe(&rules_liste);
+	suppListe(&result_apply_rules);
+	clearRule(&r1);
+	clearRule(&r2);
+	clearRule(&r3);
 	clearfuzzy(&fuzzy_univers);
 
 	return 0;

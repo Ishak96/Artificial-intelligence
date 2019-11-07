@@ -105,6 +105,11 @@ void fuzzy_all(int nb, fuzzy* fuzzy_set, ...){
 	}
 }
 
+void init_rules(rules *rule){
+
+	rule->conditions = initListe();
+}
+
 float MAX(float a, float b){
 	return (a > b) ? a : b;
 }
@@ -123,7 +128,7 @@ float apply_condition(char* operator, liste liste_values){
 				return MAX(*( float*)valCellule(liste_values), 
 							apply_condition(operator, suivCellule(liste_values)));
 			}
-			else if(!strcmp(operator, "ET")){
+			else if(!strcmp(operator, "AND")){
 				return MIN(*( float*)valCellule(liste_values), 
 							apply_condition(operator, suivCellule(liste_values)));
 			}
@@ -169,23 +174,17 @@ liste apply_rules(liste rules_liste, liste fuzzy_result_liste){
 			fuzzy_controler deduction = rule.deduction;	
 			float result_value = 0.f;
 			if(!videListe(conditions)){
-				if(longListe(conditions) > 1){
+				condition = *( fuzzy_controler*)valCellule(conditions);
+				char* operator = condition.logic_operator;
+				liste liste_values = initListe();
+				int size_float = sizeof(float);
+				while(!videListe(conditions)){
 					condition = *( fuzzy_controler*)valCellule(conditions);
-					char* operator = condition.logic_operator;
-					liste liste_values = initListe();
-					int size_float = sizeof(float);
-					while(!videListe(conditions)){
-						condition = *( fuzzy_controler*)valCellule(conditions);
-						float value = get_value_in_fuzzy_liste(condition, fuzzy_result_liste);
-						inserQueue(&value, &liste_values, size_float);
-						conditions = suivCellule(conditions);
-					}
-					result_value = apply_condition(operator, liste_values);
+					float value = get_value_in_fuzzy_liste(condition, fuzzy_result_liste);
+					inserQueue(&value, &liste_values, size_float);
+					conditions = suivCellule(conditions);
 				}
-				else{
-					condition = *( fuzzy_controler*)valCellule(conditions);
-					result_value = condition.value;
-				}
+				result_value = apply_condition(operator, liste_values);
 			}
 			deduction.value = result_value;
 			inserQueue(&deduction, &result, size_fuzzy_cont);
@@ -193,10 +192,6 @@ liste apply_rules(liste rules_liste, liste fuzzy_result_liste){
 		}
 	}
 	return result;
-}
-
-liste creat_condition(fuzzy_controler* rules_tab, int nb_rules){
-	return NULL;
 }
 
 void clearfuzzy(fuzzy* fuzzy_set){
@@ -216,4 +211,8 @@ void clearfuzzy(fuzzy* fuzzy_set){
 	suppListe(&(fuzzy_set->output_linguistic_variable));
 
 	suppListe(&(fuzzy_set->fuzzy_result_liste));
+}
+
+void clearRule(rules* r1){
+	suppListe(&(r1->conditions));
 }

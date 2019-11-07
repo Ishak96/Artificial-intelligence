@@ -61,22 +61,26 @@ linguistic_value get_trapezoidal_function(char* name, coordinates trapez[4]){
 		concatListe(&(l_value.coordinates_liste),&coordinates_liste,compare_coordinates, size_coordinates);
 	}
 
+	suppListe(&coordinates_liste);
 	return l_value;
 }
 
-linguistic_variable creatlinguistic_variable(char* name, linguistic_value* l_values, 
-	float* univers_discourse , int nb_l_value){
-	
-	linguistic_variable l_variable = initLinguistic_variable(name, univers_discourse);
+void creatlinguistic_variable(int nb, char* name, float* univers_discourse, linguistic_variable* l_variable, ...){
+	va_list ap;
+	va_start(ap, l_variable);
+	*l_variable = initLinguistic_variable(name, univers_discourse);
 	int size_linguistic_value = sizeof(linguistic_value);
 	
-	for(int i = 0; i < nb_l_value; i++){
-		linguistic_value l_value = l_values[i];
-		if(!existVal(&l_value,l_variable.values_liste,compare_linguistic_value))
-			inserQueue(&l_value,&(l_variable.values_liste),size_linguistic_value);		
-	}
+	while(nb > 0){
+		linguistic_value l_value;
+		l_value = va_arg(ap, linguistic_value);
+		
+		if(!existVal(&l_value,l_variable->values_liste,compare_linguistic_value))
+			inserQueue(&l_value,&(l_variable->values_liste),size_linguistic_value);	
 
-	return l_variable;
+		nb--;	
+	}
+	va_end(ap);
 }
 
 void afflinguistic_variable(linguistic_variable l_variable){

@@ -7,6 +7,7 @@
 #include<string.h>
 #include<malloc.h>
 #include <struct.h>
+#include<stdarg.h>
 
 /*(1)premitive*/
 TElement valCellule(liste l);
@@ -72,4 +73,5 @@ liste adresseVal(TElement X,liste l,compare_element cmpr_function);
 /*Concatenation avec destruction des listes initiale*/
 void concatListe(liste *l1,liste *l2,compare_element cmpr_function, int size);
 
+void insert_values_into_liste(int nb, int size, liste* l, ...);
 #endif

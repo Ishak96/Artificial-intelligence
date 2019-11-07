@@ -297,3 +297,16 @@ void concatListe(liste *l1,liste *l2,compare_element cmpr_function, int size){
 	}
 	*l2 = initListe();
 }
+
+void insert_values_into_liste(int nb, int size, liste* l, ...){
+	va_list ap;
+	va_start(ap, l);
+
+	while (nb > 0){
+		TElement elem;
+
+		elem = va_arg(ap, TElement);
+		inserQueue(elem,l,size);
+		--nb;
+	}
+}
