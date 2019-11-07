@@ -20,7 +20,7 @@ liste initListe();
 int videListe(liste l);
 
 /*comparaison des element*/
-int compare_crispy_fuzzy_value(TElement element1, TElement element2);
+int compare_fuzzy_controler(TElement element1, TElement element2);
 int compare_int(TElement element1, TElement element2);
 int compare_coordinates(TElement element1, TElement element2);
 int compare_linguistic_value(TElement element1, TElement element2);

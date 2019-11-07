@@ -28,13 +28,19 @@ typedef struct {
 	char* value_name;
 	char* variable_name;
 	float value;
-}crispy_fuzzy_value;
+	char* logic_operator;
+}fuzzy_controler;
 
 typedef struct{
 	liste fuzzy_result_liste;
 	liste input_linguistic_variable;
 	liste output_linguistic_variable;
 }fuzzy;
+
+typedef struct{
+	liste conditions;
+	fuzzy_controler deduction;	
+}rules;
 
 typedef void (*print_element)(void* element);
 typedef int (*compare_element)(void* element1,void* element2);

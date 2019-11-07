@@ -23,9 +23,9 @@ int videListe(liste l){
 }
 
 /*comparaison des element*/
-int compare_crispy_fuzzy_value(TElement element1, TElement element2){
-	crispy_fuzzy_value elem1 = *( crispy_fuzzy_value*)element1;
-	crispy_fuzzy_value elem2 = *( crispy_fuzzy_value*)element2;
+int compare_fuzzy_controler(TElement element1, TElement element2){
+	fuzzy_controler elem1 = *( fuzzy_controler*)element1;
+	fuzzy_controler elem2 = *( fuzzy_controler*)element2;
 
 	return (elem1.value == elem2.value) && (!strcmp(elem1.value_name, elem2.value_name))
 			&& (!strcmp(elem1.variable_name, elem2.variable_name));
@@ -62,12 +62,12 @@ void affcoordinates(TElement elem){
 }
 
 void afffuzzy_value(TElement elem){
-	crispy_fuzzy_value element = *( crispy_fuzzy_value*)elem;
+	fuzzy_controler element = *( fuzzy_controler*)elem;
 	printf("{%f in %s}\t", element.value, element.value_name);
 }
 
 void afffuzzy_result(TElement elem){
-	crispy_fuzzy_value element = *( crispy_fuzzy_value*)elem;
+	fuzzy_controler element = *( fuzzy_controler*)elem;
 	printf("|for %s -> {%f in %s}|\t",element.variable_name, element.value, element.value_name);
 }
 

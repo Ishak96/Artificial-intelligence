@@ -43,10 +43,10 @@ int main(int argc, char **argv){
 
 	l_values2[0] = get_trapezoidal_function("inadequate", trapez1_2);
 
-	A1.x = 37.5f; A1.y = 0.f;
-	B1.x = 40.f; B1.y = 0.8f;
+	A1.x = 30.f; A1.y = 0.f;
+	B1.x = 50.f; B1.y = 1.f;
 	C1.x = 50.f; C1.y = 1.f;
-	D1.x = 62.f; D1.y = 0.f;
+	D1.x = 70.f; D1.y = 0.f;
 	coordinates trapez2_2[4] = {A1, B1, C1, D1};
 	
 	l_values2[1] = get_trapezoidal_function("marjinal", trapez2_2);
@@ -91,19 +91,20 @@ int main(int argc, char **argv){
 	l_variable3 = creatlinguistic_variable("Project risk", l_values3, univers_discourse, nb_l_values);
 
 	//fuzzy
-	linguistic_variable input_l_v[2] = {l_variable1, l_variable2};
-	linguistic_variable output_l_v[1] = {l_variable3};
-	fuzzy fuzzy_univers = insert_fuzzy_varaibles(input_l_v, output_l_v, 2, 1);
+
+	fuzzy fuzzy_univers = init_fuzzy();
+	insert_fuzzy_varaibles(2, 1, &fuzzy_univers, l_variable1, l_variable2);
+	insert_fuzzy_varaibles(1, 0, &fuzzy_univers, l_variable3);
 
 	int nb_input = 2;
-	crispy_fuzzy_value input1 = {"", "Project funding", 40};
-	crispy_fuzzy_value input2 = {"", "Project staffing", 65};
-	crispy_fuzzy_value input[nb_input];
-	input[0] = input1;
-	input[1] = input2;
+	fuzzy_controler input1 = {"", "Project funding", 40};
+	fuzzy_controler input2 = {"", "Project staffing", 65};
 
-	fuzzy_all(&fuzzy_univers, input, nb_input);
+	fuzzy_all(nb_input ,&fuzzy_univers, input1, input2);
 	affListe(fuzzy_univers.fuzzy_result_liste, afffuzzy_result);
+
+	/*fuzzy_controler cond1 = {"adequate", "Project funding", 0.f, "OR"};
+	fuzzy_controler cond2 = {"small", "Project staffing", 0.f, ""};*/
 
 	clearfuzzy(&fuzzy_univers);
 
