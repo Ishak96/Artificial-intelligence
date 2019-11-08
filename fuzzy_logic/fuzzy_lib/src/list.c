@@ -101,6 +101,12 @@ void afflinguistic_value_trapez(TElement elem){
 	printf("]\n");
 }
 
+void affresult(TElement elem){
+	fuzzy_controler element = *( fuzzy_controler*)elem;
+
+	printf("|for %s -> {%f}|\t",element.variable_name, element.value);
+}
+
 /*determine la longueur d'une liste*/
 
 int longListe(liste l){

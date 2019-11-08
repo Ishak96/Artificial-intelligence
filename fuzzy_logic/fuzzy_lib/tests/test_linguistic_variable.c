@@ -132,7 +132,12 @@ int main(int argc, char **argv){
 											valCellule(fuzzy_univers.output_linguistic_variable);
 	afflinguistic_variable(l_variable_result, afflinguistic_value_trapez);
 
+	printf("\n------------------------------------------\n");
+	liste result_defuzzyfication = defuzzification(fuzzy_univers);
+	affListe(result_defuzzyfication, affresult);
+
 	suppListe(&rules_liste);
+	suppListe(&result_defuzzyfication);
 	suppListe(&result_apply_rules);
 	clearRule(&r1);
 	clearRule(&r2);

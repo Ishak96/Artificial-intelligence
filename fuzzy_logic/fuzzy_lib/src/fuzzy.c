@@ -180,6 +180,74 @@ void aggregation(fuzzy fuzzy_set, liste fuzzy_result_liste){
 	}
 }
 
+float trapez_area(coordinates* trapez){
+	
+	float area = 0.f;
+	float h = 0.f;
+	
+	for(int i = 0; i < 4; i++){
+		if(trapez[i].y > h)
+			h = trapez[i].y;
+	}
+
+	if(h > 0.f){
+		area = ((trapez[3].x - trapez[0].x)
+				+ (trapez[2].x - trapez[1].x)) * 0.5 * h;
+	}
+
+	return area;
+}
+
+float center_of_trapez_area(coordinates* trapez){
+	
+	float center_area = 0.f;
+	float h = 0.f;
+	
+	for(int i = 0; i < 4; i++){
+		if(trapez[i].y > h)
+			h = trapez[i].y;
+	}
+
+	if(h > 0.f){
+		center_area = (trapez[1].x + trapez[2].x) / 2;
+	}
+
+	return center_area;
+}
+
+liste defuzzification(fuzzy fuzzy_set){
+	
+	liste output_l_variable = fuzzy_set.output_linguistic_variable;
+	fuzzy_controler fuzzy_c;
+	int size_fuzzy_controler = sizeof(fuzzy_controler);
+	liste fuzzy_result_liste = initListe();
+
+	while(!videListe(output_l_variable)){
+		linguistic_variable l_variable = *( linguistic_variable*)valCellule(output_l_variable);
+		fuzzy_c.variable_name = l_variable.variable_name;
+
+		liste values_liste = l_variable.values_liste;
+		float sum_area = 0.f;
+		float sum_center_area = 0.f;
+
+		while(!videListe(values_liste)){
+			linguistic_value l_value = *( linguistic_value*)valCellule(values_liste);
+			float area = trapez_area(l_value.trapez);
+			sum_area += area;
+			sum_center_area += (area * center_of_trapez_area(l_value.trapez));
+
+			values_liste = suivCellule(values_liste);
+		}
+		
+		fuzzy_c.value = (sum_area == 0) ? 0.f : sum_center_area / sum_area;
+		inserQueue(&fuzzy_c, &fuzzy_result_liste, size_fuzzy_controler);
+
+		output_l_variable = suivCellule(output_l_variable);
+	}
+
+	return fuzzy_result_liste;
+}
+
 void clearfuzzy(fuzzy* fuzzy_set){
 	
 	linguistic_variable l_v;
