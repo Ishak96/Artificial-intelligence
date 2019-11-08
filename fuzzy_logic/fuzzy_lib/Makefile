@@ -21,7 +21,7 @@ TESTBINS := $(TESTS:$(TESTDIR)/%.c=$(BINDIR)/%)
 TESTOBJ  := $(TESTS:$(TESTDIR)/%.c=$(OBJDIR)/%.o)
 
 # flags to be used
-LFLAGS=
+LFLAGS=-lm
 
 # make main executable
 $(BINDIR)/$(TARGET): $(OBJECTS)

@@ -41,7 +41,7 @@ int compare_coordinates(TElement element1, TElement element2){
 	coordinates elem1 = *( coordinates*)element1;
 	coordinates elem2 = *( coordinates*)element2;
 	
-	return (elem1.x - elem2.x) + (elem1.y - elem2.y) == 0.000000000f;
+	return (elem1.x == elem2.x) && (elem1.y == elem2.y);
 }
 
 int compare_linguistic_value(TElement element1, TElement element2){
@@ -87,6 +87,17 @@ void afflinguistic_value(TElement elem){
 	printf("-----------------------\n");
 	printf("Linguistic value [%s]-->[\n", element.value_name);
 	affListe(coordinates_liste, affcoordinates);
+	printf("]\n");
+}
+
+void afflinguistic_value_trapez(TElement elem){
+	linguistic_value element = *( linguistic_value*)elem;
+	printf("-----------------------\n");
+	printf("Linguistic value [%s]-trapez->[\n", element.value_name);
+	for(int i = 0; i < 4; i++){
+		coordinates c = element.trapez[i];
+		printf("{%f, %f} ", c.x, c.y);
+	}
 	printf("]\n");
 }
 

@@ -2,6 +2,7 @@
 #include <linguistic.h>
 
 fuzzy init_fuzzy(){
+	
 	fuzzy fuzzy_varaibles;
 
 	fuzzy_varaibles.input_linguistic_variable = initListe();
@@ -12,6 +13,7 @@ fuzzy init_fuzzy(){
 }
 
 void insert_fuzzy_varaibles(int nb, int output_intput, fuzzy* fuzzy_varaibles, ...){
+	
 	va_list ap;
 	va_start(ap, fuzzy_varaibles);
 	int siez_linguistic_variable = sizeof(linguistic_variable);
@@ -32,6 +34,7 @@ void insert_fuzzy_varaibles(int nb, int output_intput, fuzzy* fuzzy_varaibles, .
 }
 
 liste fuzzyfication(linguistic_variable l_variable, float input){
+	
 	liste fuzzy_value_liste = initListe();
 	int size_fuzzy_value = sizeof(fuzzy_controler);
 
@@ -78,6 +81,7 @@ liste fuzzyfication(linguistic_variable l_variable, float input){
 }
 
 void fuzzy_all(int nb, fuzzy* fuzzy_set, ...){
+	
 	int size = sizeof(fuzzy_controler);
 	va_list ap;
 	va_start(ap, fuzzy_set);
@@ -105,96 +109,79 @@ void fuzzy_all(int nb, fuzzy* fuzzy_set, ...){
 	}
 }
 
-void init_rules(rules *rule){
+void clipping(linguistic_value l_value, float clip, float* univers_discourse){
+	int m = 100;
+	float a, b;
+	coordinates new;
+	coordinates new_trapez[4];
 
-	rule->conditions = initListe();
-}
+	for(int i = 0; i < 3; i++){
+		coordinates A = l_value.trapez[i];
+		coordinates B = l_value.trapez[i+1];
 
-float MAX(float a, float b){
-	return (a > b) ? a : b;
-}
+		a = (B.x - A.x == 0) ? 0.f : (B.y - A.y) / (B.x - A.x);
+		b = B.y - (a * B.x);
 
-float MIN(float a, float b){
-	return (a > b) ? b : a;
-}
-
-float apply_condition(char* operator, liste liste_values){
-	if(videListe(suivCellule(liste_values))){
-		return *( float*)valCellule(liste_values);
-	}
-	else{
-		if(operator != NULL){
-			if(!strcmp(operator, "OR")){
-				return MAX(*( float*)valCellule(liste_values), 
-							apply_condition(operator, suivCellule(liste_values)));
-			}
-			else if(!strcmp(operator, "AND")){
-				return MIN(*( float*)valCellule(liste_values), 
-							apply_condition(operator, suivCellule(liste_values)));
-			}
-			else{
-				printf("ERROR in the operator value\n");
-				return 0.f;
-			}
-		}
-		else{
-			printf("ERROR in the operator value NULL\n");
-			return 0.f;
-		}
-	}
-}
-
-float get_value_in_fuzzy_liste(fuzzy_controler condition, liste fuzzy_result_liste){
-	float value = 0.f;
-	if(!videListe(fuzzy_result_liste)){
 		int find = 0;
-		while(!videListe(fuzzy_result_liste) && !find){
-			fuzzy_controler fuzzy = *( fuzzy_controler*)valCellule(fuzzy_result_liste);
-			if(!strcmp(fuzzy.value_name, condition.value_name)
-				&& !strcmp(fuzzy.variable_name, condition.variable_name)){
-				
-				value = fuzzy.value;
+		for(int j = 0; j <= m && !find; j++){
+			new.x = A.x + ((float)j * (B.x - A.x)) / m;
+			new.y = (a * new.x) + b;
+
+			if(new.y == clip)
 				find = 1;
-			}
-			fuzzy_result_liste = suivCellule(fuzzy_result_liste);
 		}
+
+		if(A.x == univers_discourse[0] || A.x == univers_discourse[1]){
+			new_trapez[i].x = A.x;
+			new_trapez[i].y = (A.y != 0.f) ? clip : 0.f;
+			continue;
+		}
+
+		if(i == 0)
+			new_trapez[i+1] = new;
+		
+		else if(i == 2)
+			new_trapez[i] = new;
 	}
-	return value;
+	
+	for (int i = 1; i < 3; i++){
+		l_value.trapez[i] = new_trapez[i];
+	}
 }
 
-liste apply_rules(liste rules_liste, liste fuzzy_result_liste){
-	liste result = initListe();
-	fuzzy_controler condition;
-	int size_fuzzy_cont = sizeof(fuzzy_controler);
-	if(!videListe(rules_liste)){
-		while(!videListe(rules_liste)){
-			rules rule = *( rules*)valCellule(rules_liste);
+void clipping_process(fuzzy fuzzy_set, fuzzy_controler result){
+	
+	liste output_liste = fuzzy_set.output_linguistic_variable;
+	while(!videListe(output_liste)){
+		linguistic_variable output_l_variable = *( linguistic_variable*)valCellule(output_liste);
 
-			liste conditions = rule.conditions;
-			fuzzy_controler deduction = rule.deduction;	
-			float result_value = 0.f;
-			if(!videListe(conditions)){
-				condition = *( fuzzy_controler*)valCellule(conditions);
-				char* operator = condition.logic_operator;
-				liste liste_values = initListe();
-				int size_float = sizeof(float);
-				while(!videListe(conditions)){
-					condition = *( fuzzy_controler*)valCellule(conditions);
-					float value = get_value_in_fuzzy_liste(condition, fuzzy_result_liste);
-					inserQueue(&value, &liste_values, size_float);
-					conditions = suivCellule(conditions);
+		if(!strcmp(output_l_variable.variable_name, result.variable_name)){
+			liste l_value_liste = output_l_variable.values_liste;
+			int find = 0;
+			while(!videListe(l_value_liste) && !find){
+				linguistic_value l_value = *( linguistic_value*)valCellule(l_value_liste);
+				if(!strcmp(l_value.value_name, result.value_name)){
+					clipping(l_value, result.value, output_l_variable.univers_discourse);
+					find = 1;
 				}
-				result_value = apply_condition(operator, liste_values);
-			}
-			deduction.value = result_value;
-			inserQueue(&deduction, &result, size_fuzzy_cont);
-			rules_liste = suivCellule(rules_liste);
+				l_value_liste = suivCellule(l_value_liste);
+			}	
 		}
+		output_liste = suivCellule(output_liste);
 	}
-	return result;
+}
+
+void aggregation(fuzzy fuzzy_set, liste fuzzy_result_liste){
+	
+	while(!videListe(fuzzy_result_liste)){
+		fuzzy_controler result = *( fuzzy_controler*)valCellule(fuzzy_result_liste);
+		clipping_process(fuzzy_set, result);
+		fuzzy_result_liste = suivCellule(fuzzy_result_liste);
+	}
 }
 
 void clearfuzzy(fuzzy* fuzzy_set){
+	
 	linguistic_variable l_v;
 	while(!videListe(fuzzy_set->input_linguistic_variable)){
 		l_v = *(linguistic_variable *)valCellule(fuzzy_set->input_linguistic_variable);
@@ -211,8 +198,4 @@ void clearfuzzy(fuzzy* fuzzy_set){
 	suppListe(&(fuzzy_set->output_linguistic_variable));
 
 	suppListe(&(fuzzy_set->fuzzy_result_liste));
-}
-
-void clearRule(rules* r1){
-	suppListe(&(r1->conditions));
 }

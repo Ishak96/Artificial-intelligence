@@ -1,5 +1,6 @@
 #include<linguistic.h>
 #include<fuzzy.h>
+#include<rule.h>
 #include <assert.h>
 
 int main(int argc, char **argv){
@@ -86,6 +87,7 @@ int main(int argc, char **argv){
 	fuzzy_controler input2 = {"", "Project staffing", 65};
 
 	fuzzy_all(nb_input ,&fuzzy_univers, input1, input2);
+	printf("\n------------------------------------------\n");
 	affListe(fuzzy_univers.fuzzy_result_liste, afffuzzy_result);
 
 	rules r1;
@@ -120,8 +122,15 @@ int main(int argc, char **argv){
 	liste rules_liste = initListe();
 	insert_values_into_liste(3, sizeof(rules), &rules_liste, &r1, &r2, &r3);
 
+	printf("\n------------------------------------------\n");
 	liste result_apply_rules = apply_rules(rules_liste, fuzzy_univers.fuzzy_result_liste);
 	affListe(result_apply_rules, afffuzzy_result);
+
+	aggregation(fuzzy_univers, result_apply_rules);
+	
+	linguistic_variable l_variable_result = *( linguistic_variable*)
+											valCellule(fuzzy_univers.output_linguistic_variable);
+	afflinguistic_variable(l_variable_result, afflinguistic_value_trapez);
 
 	suppListe(&rules_liste);
 	suppListe(&result_apply_rules);

@@ -20,7 +20,7 @@ linguistic_variable initLinguistic_variable(char* name, float* univers_discourse
 }
 
 liste get_coordinates(coordinates A, coordinates B, function_eval function, int linear){
-	float inc = 0.5f;
+	int m = 100;
 	float a, b;
 	coordinates c;
 	liste coordinates_liste = initListe();
@@ -30,9 +30,9 @@ liste get_coordinates(coordinates A, coordinates B, function_eval function, int 
 		a = (B.x - A.x == 0) ? 0.f : (B.y - A.y) / (B.x - A.x);
 		b = B.y - (a * B.x);
 	}
-	
-	for(float i = A.x; i <= B.x; i+=inc){
-		c.x = i;
+
+	for(int i = 0; i <= m; i++){
+		c.x = A.x + ((float)i * (B.x - A.x)) / m;
 		c.y = (linear) ? (a * c.x) + b : function(c.x);
 		if(!existVal(&c,coordinates_liste,compare_coordinates))
 			inserTete(&c,&coordinates_liste,size_coordinates);
@@ -41,8 +41,9 @@ liste get_coordinates(coordinates A, coordinates B, function_eval function, int 
 	return coordinates_liste;
 }
 
-linguistic_value get_trapezoidal_function(char* name, coordinates trapez[4]){
+linguistic_value get_trapezoidal_function(char* name, coordinates* trapez){
 	linguistic_value l_value = initLinguistic_value(name);
+	l_value.trapez = trapez;
 	int size_coordinates = sizeof(coordinates);
 
 	liste coordinates_liste = initListe();
@@ -83,11 +84,11 @@ void creatlinguistic_variable(int nb, char* name, float* univers_discourse, ling
 	va_end(ap);
 }
 
-void afflinguistic_variable(linguistic_variable l_variable){
+void afflinguistic_variable(linguistic_variable l_variable, print_element aff_function){
 	printf("Linguistic value [%s]:univers of discourse[%f-%f]-->[\n"
 		, l_variable.variable_name, l_variable.univers_discourse[0], l_variable.univers_discourse[1]);
 	
-	affListe(l_variable.values_liste, afflinguistic_value);
+	affListe(l_variable.values_liste, aff_function);
 	
 	printf("]\n");
 }

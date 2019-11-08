@@ -16,6 +16,7 @@ typedef struct {
 typedef struct{
 	char* value_name;
 	liste coordinates_liste;
+	coordinates* trapez;
 }linguistic_value;
 
 typedef struct{
