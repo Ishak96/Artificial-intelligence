@@ -9,8 +9,8 @@ typedef struct Cellule{
 }*liste;
 
 typedef struct {
-	float x;
-	float y;
+	double x;
+	double y;
 }coordinates;
 
 typedef struct{
@@ -22,13 +22,13 @@ typedef struct{
 typedef struct{
 	char* variable_name;
 	liste values_liste;
-	float* univers_discourse;
+	double* univers_discourse;
 }linguistic_variable;
 
 typedef struct {
 	char* value_name;
 	char* variable_name;
-	float value;
+	double value;
 	char* logic_operator;
 }fuzzy_controler;
 
@@ -45,7 +45,7 @@ typedef struct{
 
 typedef void (*print_element)(void* element);
 typedef int (*compare_element)(void* element1,void* element2);
-typedef float (*function_eval)(float x);
+typedef double (*function_eval)(double x);
 
 
 #endif

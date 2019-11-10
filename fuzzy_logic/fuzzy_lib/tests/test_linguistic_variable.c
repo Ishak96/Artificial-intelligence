@@ -9,7 +9,7 @@ int main(int argc, char **argv){
 
 	linguistic_variable l_variable1, l_variable2, l_variable3;
 	int nb_l_values;
-	float univers_discourse[2] = {0, 100};
+	double univers_discourse[2] = {0, 100};
 
 	// Projetc staffing
 	nb_l_values = 2;
@@ -36,10 +36,10 @@ int main(int argc, char **argv){
 	D.x = 50.f; D.y = 0.f;
 	coordinates trapez1_2[4] = {A, B, C, D};
 
-	A1.x = 30.f; A1.y = 0.f;
-	B1.x = 50.f; B1.y = 1.f;
+	A1.x = 37.5f; A1.y = 0.f;
+	B1.x = 40.f; B1.y = 0.8f;
 	C1.x = 50.f; C1.y = 1.f;
-	D1.x = 70.f; D1.y = 0.f;
+	D1.x = 62.5f; D1.y = 0.f;
 	coordinates trapez2_2[4] = {A1, B1, C1, D1};
 
 	coordinates A2 = {50.f, 0.f};
@@ -83,8 +83,8 @@ int main(int argc, char **argv){
 	insert_fuzzy_varaibles(1, 0, &fuzzy_univers, l_variable3);
 
 	int nb_input = 2;
-	fuzzy_controler input1 = {"", "Project funding", 40};
-	fuzzy_controler input2 = {"", "Project staffing", 65};
+	fuzzy_controler input1 = {"", "Project funding", 10};
+	fuzzy_controler input2 = {"", "Project staffing", 1};
 
 	fuzzy_all(nb_input ,&fuzzy_univers, input1, input2);
 	printf("\n------------------------------------------\n");

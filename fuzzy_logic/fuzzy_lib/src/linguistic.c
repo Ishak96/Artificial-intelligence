@@ -9,7 +9,7 @@ linguistic_value initLinguistic_value(char* name){
 	return l_value;
 }
 
-linguistic_variable initLinguistic_variable(char* name, float* univers_discourse){
+linguistic_variable initLinguistic_variable(char* name, double* univers_discourse){
 	linguistic_variable l_variable;
 
 	l_variable.variable_name = name;
@@ -20,8 +20,8 @@ linguistic_variable initLinguistic_variable(char* name, float* univers_discourse
 }
 
 liste get_coordinates(coordinates A, coordinates B, function_eval function, int linear){
-	int m = 100;
-	float a, b;
+	int m = 300;
+	double a, b;
 	coordinates c;
 	liste coordinates_liste = initListe();
 	int size_coordinates = sizeof(coordinates);
@@ -32,7 +32,7 @@ liste get_coordinates(coordinates A, coordinates B, function_eval function, int 
 	}
 
 	for(int i = 0; i <= m; i++){
-		c.x = A.x + ((float)i * (B.x - A.x)) / m;
+		c.x = A.x + ((double)i * (B.x - A.x)) / m;
 		c.y = (linear) ? (a * c.x) + b : function(c.x);
 		if(!existVal(&c,coordinates_liste,compare_coordinates))
 			inserTete(&c,&coordinates_liste,size_coordinates);
@@ -66,7 +66,7 @@ linguistic_value get_trapezoidal_function(char* name, coordinates* trapez){
 	return l_value;
 }
 
-void creatlinguistic_variable(int nb, char* name, float* univers_discourse, linguistic_variable* l_variable, ...){
+void creatlinguistic_variable(int nb, char* name, double* univers_discourse, linguistic_variable* l_variable, ...){
 	va_list ap;
 	va_start(ap, l_variable);
 	*l_variable = initLinguistic_variable(name, univers_discourse);
