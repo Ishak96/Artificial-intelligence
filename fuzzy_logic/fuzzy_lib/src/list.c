@@ -82,16 +82,6 @@ void affListe(liste l, print_element aff_function){
 
 void afflinguistic_value(TElement elem){
 	linguistic_value element = *( linguistic_value*)elem;
-	liste coordinates_liste = element.coordinates_liste;
-
-	printf("-----------------------\n");
-	printf("Linguistic value [%s]-->[\n", element.value_name);
-	affListe(coordinates_liste, affcoordinates);
-	printf("]\n");
-}
-
-void afflinguistic_value_trapez(TElement elem){
-	linguistic_value element = *( linguistic_value*)elem;
 	printf("-----------------------\n");
 	printf("Linguistic value [%s]-trapez->[\n", element.value_name);
 	for(int i = 0; i < 4; i++){

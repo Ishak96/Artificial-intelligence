@@ -1,15 +1,15 @@
 #include <linguistic.h>
 
-linguistic_value initLinguistic_value(char* name){
+linguistic_value initLinguistic_value(char* name, coordinates* trapez){
 	linguistic_value l_value;
-
+	
 	l_value.value_name = name;
-	l_value.coordinates_liste = initListe();
+	l_value.trapez = trapez;
 
 	return l_value;
 }
 
-linguistic_variable initLinguistic_variable(char* name, double* univers_discourse){
+linguistic_variable initLinguistic_variable(char* name, float* univers_discourse){
 	linguistic_variable l_variable;
 
 	l_variable.variable_name = name;
@@ -19,54 +19,7 @@ linguistic_variable initLinguistic_variable(char* name, double* univers_discours
 	return l_variable;
 }
 
-liste get_coordinates(coordinates A, coordinates B, function_eval function, int linear){
-	int m = 300;
-	double a, b;
-	coordinates c;
-	liste coordinates_liste = initListe();
-	int size_coordinates = sizeof(coordinates);
-
-	if(linear){
-		a = (B.x - A.x == 0) ? 0.f : (B.y - A.y) / (B.x - A.x);
-		b = B.y - (a * B.x);
-	}
-
-	for(int i = 0; i <= m; i++){
-		c.x = A.x + ((double)i * (B.x - A.x)) / m;
-		c.y = (linear) ? (a * c.x) + b : function(c.x);
-		if(!existVal(&c,coordinates_liste,compare_coordinates))
-			inserTete(&c,&coordinates_liste,size_coordinates);
-	}
-
-	return coordinates_liste;
-}
-
-linguistic_value get_trapezoidal_function(char* name, coordinates* trapez){
-	linguistic_value l_value = initLinguistic_value(name);
-	l_value.trapez = trapez;
-	int size_coordinates = sizeof(coordinates);
-
-	liste coordinates_liste = initListe();
-	for(int i = 0; i < 3; i++){
-		coordinates A = trapez[i];
-		coordinates B = trapez[i+1];
-
-		if(A.x == B.x){
-			coordinates C = (A.y > B.y) ? A : B;
-			if(!existVal(&C,coordinates_liste,compare_coordinates))
-				inserTete(&C,&coordinates_liste,size_coordinates);
-		}
-		else{
-			coordinates_liste = get_coordinates(A, B, NULL, 1);
-		}
-		concatListe(&(l_value.coordinates_liste),&coordinates_liste,compare_coordinates, size_coordinates);
-	}
-
-	suppListe(&coordinates_liste);
-	return l_value;
-}
-
-void creatlinguistic_variable(int nb, char* name, double* univers_discourse, linguistic_variable* l_variable, ...){
+void creatlinguistic_variable(int nb, char* name, float* univers_discourse, linguistic_variable* l_variable, ...){
 	va_list ap;
 	va_start(ap, l_variable);
 	*l_variable = initLinguistic_variable(name, univers_discourse);
@@ -93,22 +46,7 @@ void afflinguistic_variable(linguistic_variable l_variable, print_element aff_fu
 	printf("]\n");
 }
 
-void clearlinguistic_value(linguistic_value* l_value){
-	liste coordinates_liste = l_value->coordinates_liste;
-	suppListe(&coordinates_liste);
-}
-
 void clearlinguistic_variable(linguistic_variable* l_variable){
-	
-	liste values_liste = l_variable->values_liste;
-	if(!videListe(values_liste)){
-		while(!videListe(values_liste)){
-			linguistic_value l_value = *(linguistic_value *)valCellule(values_liste);
-			clearlinguistic_value(&l_value);
-
-			values_liste = suivCellule(values_liste);
-		}
-	}
 
 	suppListe(&(l_variable->values_liste));
 }

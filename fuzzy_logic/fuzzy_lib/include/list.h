@@ -33,7 +33,6 @@ void afffuzzy_value(TElement elem);
 void afffuzzy_result(TElement elem);
 void affListe(liste l, print_element aff_function);
 void afflinguistic_value(TElement elem);
-void afflinguistic_value_trapez(TElement elem);
 void affresult(TElement elem);
 
 /*determine la longueur d'une liste*/

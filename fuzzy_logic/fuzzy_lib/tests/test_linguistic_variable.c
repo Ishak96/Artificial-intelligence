@@ -9,7 +9,7 @@ int main(int argc, char **argv){
 
 	linguistic_variable l_variable1, l_variable2, l_variable3;
 	int nb_l_values;
-	double univers_discourse[2] = {0, 100};
+	float univers_discourse[2] = {0, 100};
 
 	// Projetc staffing
 	nb_l_values = 2;
@@ -26,7 +26,7 @@ int main(int argc, char **argv){
 	coordinates trapez2_1[4] = {A1, B1, C1, D1};
 
 	creatlinguistic_variable(nb_l_values, "Project staffing", univers_discourse, &l_variable1,
-	 	get_trapezoidal_function("small", trapez1_1), get_trapezoidal_function("large", trapez2_1));
+	 	initLinguistic_value("small", trapez1_1), initLinguistic_value("large", trapez2_1));
 
 	// Projetc funding
 	nb_l_values = 3;
@@ -49,8 +49,8 @@ int main(int argc, char **argv){
 	coordinates trapez3_2[4] = {A2, B2, C2, D2};
 	
 	creatlinguistic_variable(nb_l_values, "Project funding", univers_discourse, &l_variable2, 
-		get_trapezoidal_function("inadequate", trapez1_2), get_trapezoidal_function("marjinal", trapez2_2),
-		get_trapezoidal_function("adequate", trapez3_2));
+		initLinguistic_value("inadequate", trapez1_2), initLinguistic_value("marjinal", trapez2_2),
+		initLinguistic_value("adequate", trapez3_2));
 
 	// Projetc risk
 	nb_l_values = 3;
@@ -73,22 +73,14 @@ int main(int argc, char **argv){
 	coordinates trapez3_3[4] = {A2, B2, C2, D2};
 	
 	creatlinguistic_variable(nb_l_values, "Project risk", univers_discourse, &l_variable3, 
-		get_trapezoidal_function("low", trapez1_3), get_trapezoidal_function("normal", trapez2_3),
-		get_trapezoidal_function("high", trapez3_3));
+		initLinguistic_value("low", trapez1_3), initLinguistic_value("normal", trapez2_3),
+		initLinguistic_value("high", trapez3_3));
 
 	//fuzzy
 
 	fuzzy fuzzy_univers = init_fuzzy();
 	insert_fuzzy_varaibles(2, 1, &fuzzy_univers, l_variable1, l_variable2);
 	insert_fuzzy_varaibles(1, 0, &fuzzy_univers, l_variable3);
-
-	int nb_input = 2;
-	fuzzy_controler input1 = {"", "Project funding", 10};
-	fuzzy_controler input2 = {"", "Project staffing", 1};
-
-	fuzzy_all(nb_input ,&fuzzy_univers, input1, input2);
-	printf("\n------------------------------------------\n");
-	affListe(fuzzy_univers.fuzzy_result_liste, afffuzzy_result);
 
 	rules r1;
 	init_rules(&r1);
@@ -122,6 +114,14 @@ int main(int argc, char **argv){
 	liste rules_liste = initListe();
 	insert_values_into_liste(3, sizeof(rules), &rules_liste, &r1, &r2, &r3);
 
+	int nb_input = 2;
+	fuzzy_controler input1 = {"", "Project funding", 40};
+	fuzzy_controler input2 = {"", "Project staffing", 34};
+
+	fuzzy_all(nb_input ,&fuzzy_univers, input1, input2);
+	printf("\n------------------------------------------\n");
+	affListe(fuzzy_univers.fuzzy_result_liste, afffuzzy_result);
+
 	printf("\n------------------------------------------\n");
 	liste result_apply_rules = apply_rules(rules_liste, fuzzy_univers.fuzzy_result_liste);
 	affListe(result_apply_rules, afffuzzy_result);
@@ -130,7 +130,7 @@ int main(int argc, char **argv){
 	
 	linguistic_variable l_variable_result = *( linguistic_variable*)
 											valCellule(fuzzy_univers.output_linguistic_variable);
-	afflinguistic_variable(l_variable_result, afflinguistic_value_trapez);
+	afflinguistic_variable(l_variable_result, afflinguistic_value);
 
 	printf("\n------------------------------------------\n");
 	liste result_defuzzyfication = defuzzification(fuzzy_univers);

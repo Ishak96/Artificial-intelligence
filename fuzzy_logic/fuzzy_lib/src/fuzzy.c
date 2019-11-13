@@ -33,10 +33,13 @@ void insert_fuzzy_varaibles(int nb, int output_intput, fuzzy* fuzzy_varaibles, .
 	va_end(ap);
 }
 
-liste fuzzyfication(linguistic_variable l_variable, double input){
+liste fuzzyfication(linguistic_variable l_variable, float input){
 	
 	liste fuzzy_value_liste = initListe();
 	int size_fuzzy_value = sizeof(fuzzy_controler);
+	int m = 100;
+	float a, b, x, y;
+	int find;
 
 	if(input >= l_variable.univers_discourse[0]
 		&& input <= l_variable.univers_discourse[1]){
@@ -51,21 +54,29 @@ liste fuzzyfication(linguistic_variable l_variable, double input){
 				fuzzfied.value_name = l_value.value_name;
 				fuzzfied.variable_name = l_variable.variable_name;
 
-				liste coordinates_liste = l_value.coordinates_liste;
-				int find = 0;
-				if(!videListe(coordinates_liste)){
-					while(!videListe(coordinates_liste) && !find){
-						coordinates coordinate = *( coordinates*)valCellule(coordinates_liste);
-						if(coordinate.x == input){
-							fuzzfied.value = coordinate.y;
-							find = 1;
-						}
-
-						coordinates_liste = suivCellule(coordinates_liste);
-					}
-				}
-				if(!find){
+				coordinates* trapez = l_value.trapez;
+				if(trapez){
 					fuzzfied.value = 0.f;
+					find = 0;
+
+					for(int i = 0; i < 3 && !find; i++){
+						coordinates A = trapez[i];
+						coordinates B = trapez[i+1];
+
+						a = (B.x - A.x == 0) ? 0.f : (B.y - A.y) / (B.x - A.x);
+						b = B.y - (a * B.x);
+
+						for(int j = 0; j <= m && !find; j++){
+							x = A.x + (j * (B.x - A.x)) / m;
+							y = (a * x) + b;
+
+							float dif = x-input;
+							if((dif <= 0.00000001f && dif >= 0.f) || (dif >= -0.00000001f && dif <= 0.f)){
+								fuzzfied.value = y;
+								find = 1;
+							}
+						}
+					}					
 				}
 
 				inserQueue(&fuzzfied,&fuzzy_value_liste,size_fuzzy_value);
@@ -102,8 +113,13 @@ void fuzzy_all(int nb, fuzzy* fuzzy_set, ...){
 				}
 				linguistic_variables = suivCellule(linguistic_variables);
 			}
-			liste fuzzy_value_liste = fuzzyfication(l_variable, value.value);
-			concatListe(&(fuzzy_set->fuzzy_result_liste),&fuzzy_value_liste,compare_fuzzy_controler, size);
+			if(!find){
+				printf("error invalid input variable name: entering %s %d\n", __FUNCTION__, __LINE__);
+			}
+			else{
+				liste fuzzy_value_liste = fuzzyfication(l_variable, value.value);
+				concatListe(&(fuzzy_set->fuzzy_result_liste),&fuzzy_value_liste,compare_fuzzy_controler, size);
+			}
 		}
 		nb--;
 	}
@@ -136,9 +152,9 @@ void fuzzy_all_table(int nb, fuzzy_controler* inputs, fuzzy* fuzzy_set){
 	}
 }
 
-void clipping(linguistic_value l_value, double clip, double* univers_discourse){
-	int m = 300;
-	double a, b;
+void clipping(linguistic_value l_value, float clip, float* univers_discourse){
+	int m = 100;
+	float a, b;
 	coordinates new;
 	coordinates new_trapez[4];
 
@@ -151,12 +167,15 @@ void clipping(linguistic_value l_value, double clip, double* univers_discourse){
 
 		int find = 0;
 		for(int j = 0; j <= m && !find; j++){
-			new.x = A.x + ((double)j * (B.x - A.x)) / m;
+			new.x = A.x + ((float)j * (B.x - A.x)) / m;
 			new.y = (a * new.x) + b;
 
-			if(new.y == clip)
-				if((i == 0 && new.y != A.y) || (i == 2 && new.y != B.y))
+			float dif = new.y - clip;
+			if((dif <= 0.000001f && dif >= 0.f) || (dif >= -0.000001f && dif <= 0.f)){
+				if((i == 0 && new.x != A.x) || (i == 2 && new.x != B.x)){
 					find = 1;
+				}
+			}
 		}
 
 		if(A.x == univers_discourse[0] || A.x == univers_discourse[1]){
@@ -221,10 +240,10 @@ void aggregation(fuzzy fuzzy_set, liste fuzzy_result_liste){
 	}
 }
 
-double trapez_area(coordinates* trapez){
+float trapez_area(coordinates* trapez){
 	
-	double area = 0.f;
-	double h = 0.f;
+	float area = 0.f;
+	float h = 0.f;
 	
 	for(int i = 0; i < 4; i++){
 		if(trapez[i].y > h)
@@ -239,10 +258,10 @@ double trapez_area(coordinates* trapez){
 	return area;
 }
 
-double center_of_trapez_area(coordinates* trapez){
+float center_of_trapez_area(coordinates* trapez){
 	
-	double center_area = 0.f;
-	double h = 0.f;
+	float center_area = 0.f;
+	float h = 0.f;
 	
 	for(int i = 0; i < 4; i++){
 		if(trapez[i].y > h)
@@ -268,12 +287,12 @@ liste defuzzification(fuzzy fuzzy_set){
 		fuzzy_c.variable_name = l_variable.variable_name;
 
 		liste values_liste = l_variable.values_liste;
-		double sum_area = 0.f;
-		double sum_center_area = 0.f;
+		float sum_area = 0.f;
+		float sum_center_area = 0.f;
 
 		while(!videListe(values_liste)){
 			linguistic_value l_value = *( linguistic_value*)valCellule(values_liste);
-			double area = trapez_area(l_value.trapez);
+			float area = trapez_area(l_value.trapez);
 			sum_area += area;
 			sum_center_area += (area * center_of_trapez_area(l_value.trapez));
 
