@@ -80,6 +80,7 @@ liste apply_rules(liste rules_liste, liste fuzzy_result_liste){
 					conditions = suivCellule(conditions);
 				}
 				result_value = apply_condition(operator, liste_values);
+				suppListe(&liste_values);
 			}
 			deduction.value = result_value;
 			inserQueue(&deduction, &result, size_fuzzy_cont);
