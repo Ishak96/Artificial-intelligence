@@ -23,17 +23,26 @@
 #define TURN_SPEED      4                    /* normal (slow) turn speed */
 #define COLLISION_TH    500                  /* value of IR sensors to be considered as collision */
 #define MAXNAME 10          /* max number of characters in names*/
-#define max(a,b)   (a<b ? b : a)
-#define min(a,b)   (a>b ? b : a)
-#define sign(a)    (a<0 ? -1 : 1)
+#define max(a,b)     (a<b ? b : a)
+#define min(a,b)     (a>b ? b : a)
+#define max_f(a,b,c) (c>max(a,b) ? c : max(a,b))
+#define sign(a)      (a<0 ? -1 : 1)
+
+struct point{
+  float x;
+  float y;
+};
+
+struct linear_function{
+  struct point straight_line[2];
+  float slopes;
+  float intercept;
+};
 
 struct mf_type{
   char name[MAXNAME];     /* name of membership function (fuzzy set)    */
   float value;            /* degree of membership or output strength    */
-  float point1;           /* leftmost x-axis point of mem. function     */
-  float point2;           /* rightmost x-axis point of mem. function    */
-  float slope1;           /* slope of left side of membership function  */
-  float slope2;           /* slope of right side of membership function */
+  struct linear_function trapezoid[2];
 };
 
 struct io_type{
@@ -63,6 +72,65 @@ struct io_type System_Outputs[2];
 float UPPER_LIMIT = 1.f;    /* max number assigned as degree of membership */
 int pas=0;
 
+void init_point(p,x,y)
+struct point* p;
+float x,y;
+{
+  p->x = x;
+  p->y = y;
+}
+
+void init_trapezoid(trapezoid,ax,ay,bx,by)
+struct linear_function* trapezoid;
+float ax,ay,bx,by;
+{
+  init_point(trapezoid->straight_line+0,ax,ay);
+  init_point(trapezoid->straight_line+1,bx,by);
+  trapezoid->slopes = ((bx-ax) != 0.f) ? (by-ay)/(bx-ax): 0.f;
+  trapezoid->intercept = by-trapezoid->slopes*bx;
+}
+
+void create_mf(mf,name,ax,ay,bx,by,cx,cy,dx,dy)
+struct mf_type* mf;
+char name[MAXNAME];
+float ax,ay,bx,by,cx,cy,dx,dy;
+{
+  sprintf(mf->name, "%s", name);
+  init_trapezoid(mf->trapezoid+0,ax,ay,bx,by);
+  init_trapezoid(mf->trapezoid+1,cx,cy,dx,dy);
+}
+
+
+/*clipping a trapezoid forme*/
+void clipping_trapezoid(mf)
+struct mf_type *mf;
+{
+  float value = mf->value;
+  struct linear_function* trapezoid;
+  struct point* p;
+  float slopes, intercept;
+  
+  if(value != 0.f){
+    for(int i = 0; i < 2; i++){
+      trapezoid=mf->trapezoid+i;
+      slopes = trapezoid->slopes;
+      intercept = trapezoid->intercept;
+      for(int j = 0; j < 2; j++){
+        if(i==0 && j==1){
+          p=trapezoid->straight_line+j;
+          p->y = value;
+          p->x = (slopes!=0.f) ? (value-intercept)/slopes : p->x;
+        }
+        else if(i==1 && j==0){
+          p=trapezoid->straight_line+j;
+          p->y = value;
+          p->x = (slopes!=0.f) ? (value-intercept)/slopes : p->x;
+        }
+      }
+    }
+  }
+}
+
 /* Compute Degree of Membership--Degree to which input is a member of mf is
 calculated as follows: 1. Compute delta terms to determine if input is inside
 or outside membership function. 2. If outside, then degree of membership is 0.
@@ -74,16 +142,20 @@ float input;
 {
   float delta_1;
   float delta_2;
-  delta_1 = input - mf->point1;
-  delta_2 = mf->point2 - input;
+  delta_1 = input - mf->trapezoid[0].straight_line[0].x;
+  delta_2 = mf->trapezoid[1].straight_line[1].x - input;
 
   if ((delta_1 < 0) || (delta_2 < 0))   /* input outside mem. function ? */
     mf->value = 0;                      /* then degree of membership is 0 */
   else{
-    if(mf->slope1 == 0)
-      mf->value = min( (mf->slope1*delta_1),(mf->slope2*delta_2) );
-    else if(mf->slope2 == 0)
-      mf->value = max( (mf->slope1*delta_1),(mf->slope2*delta_2) );
+    if(mf->trapezoid[0].slopes == 0){
+      mf->value = min( (mf->trapezoid[0].slopes*delta_1),
+        (mf->trapezoid[1].slopes*delta_2) );
+    }
+    else if(mf->trapezoid[1].slopes == 0){
+      mf->value = max( (mf->trapezoid[0].slopes*delta_1),
+        (mf->trapezoid[1].slopes*delta_2) );
+    }
     
     mf->value = min(sign(mf->value)*mf->value,UPPER_LIMIT);  /* enforce upper limit */
   }
@@ -97,16 +169,12 @@ b=base=mf->point2-mf->point1 a=top= must be derived from h,b, and slopes1&2 */
 float compute_area_of_trapezoid(mf)
 struct mf_type mf;
 {
-  float run_1;
-  float run_2;
   float base;
   float top;
   float area;
-  base = mf.point2 - mf.point1;
-  run_1 = (mf.slope1 != 0) ? mf.value/mf.slope1 : mf.slope1;
-  run_2 = (mf.slope2 != 0) ? mf.value/mf.slope2 : mf.slope2;
-  top = base - run_1 - run_2;
-  area = mf.value * ( base + top )/2;
+  base = mf.trapezoid[0].straight_line[0].x - mf.trapezoid[1].straight_line[1].x;
+  top = mf.trapezoid[0].straight_line[1].x - mf.trapezoid[1].straight_line[0].x;
+  area = mf.value * ( base + top ) / 2;
   return(area);
 }
 
@@ -126,8 +194,11 @@ void rule_evaluation(){
   for(rule=Rule_Base; rule != NULL; rule=rule->next){
     strength = UPPER_LIMIT;                       /* max rule strength allowed */
         /* process if-side of rule to determine strength */
-    for(ip=rule->if_side; ip != NULL; ip=ip->next)
+    printf("if_side\n");
+    for(ip=rule->if_side; ip != NULL; ip=ip->next){
       strength = min(strength,*(ip->value));
+      printf("strength = %f, value = %f\n", strength, *(ip->value));
+    }
     /* process then-side of rule to apply strength */
     for(tp=rule->then_side; tp != NULL; tp=tp->next)
       *(tp->value) = max(strength,*(tp->value));
@@ -149,12 +220,26 @@ void fuzzification(){
   }
 }
 
+/*Aggregation*/
+void aggregation(){
+  struct io_type* si;    /* system input pointer        */
+  struct mf_type* mf;    /* membership function pointer */
+  
+  for(int i = 0; i < 2; i++){
+    si=System_Outputs+i;
+    for(int j = 0; j < 2; j++){
+      mf=si->membership_functions+j;
+      clipping_trapezoid(mf);
+    }
+  }
+}
+
 /* Defuzzification */
 void defuzzification(){
-  struct io_type *so;    /* system output pointer */
-  struct mf_type mf;    /* output membership function pointer */
+  struct io_type *so;      /* system output pointer */
+  struct mf_type mf;     /* output membership function pointer */
   float sum_of_products;   /* sum of products of area & centroid */
-  float sum_of_areas;   /* sum of shortend trapezoid area */
+  float sum_of_areas;    /* sum of shortend trapezoid area */
   float area;
   float centroid;
  
@@ -167,12 +252,12 @@ void defuzzification(){
     for(int j = 0; j < 2; j++){
       mf=so->membership_functions[j];
       area = compute_area_of_trapezoid(mf);
-      centroid = mf.point1 + (mf.point2 + mf.point1) / 2.f;
+      centroid = (mf.trapezoid[0].straight_line[1].x + mf.trapezoid[1].straight_line[0].x) / 2.f;
       sum_of_products += area * centroid;
       sum_of_areas += area;
     }
-    
-    so->value = (sum_of_areas != 0.f) ? sum_of_products/sum_of_areas : sum_of_areas;   /* weighted average */
+    so->value = (sum_of_areas > 0.000001f || sum_of_areas < -0.000001f) 
+    ? sum_of_products/sum_of_areas : sum_of_areas;   /* weighted average */
   }
 }
 
@@ -194,29 +279,13 @@ void initialize_system(){
   struct mf_type input_mf[2], output_mf[2];
   
   /*create membership function for input/output system*/
-  sprintf(input_mf[0].name, "%s", "CL_FAR");
-  input_mf[0].point1 = 0.f;
-  input_mf[0].point2 = 511.5f;
-  input_mf[0].slope1 = 0.f;
-  input_mf[0].slope2 = -0.0097f;
+  create_mf(input_mf+0,"CL_FAR",0.f,0.f,0.f,1.f,408.f,1.f,511.5f,0.f);
 
-  sprintf(input_mf[1].name, "%s", "CL_NEAR");
-  input_mf[1].point1 = 511.5f;
-  input_mf[1].point2 = 1023.f;
-  input_mf[1].slope1 = 0.0034f;
-  input_mf[1].slope2 = 0.f;
+  create_mf(input_mf+1,"CL_NEAR",511.5f,0.f,810.f,1.f,1023.f,1.f,1023.f,0.f);
 
-  sprintf(output_mf[0].name, "%s", "MR--");
-  output_mf[0].point1 = -5.f;
-  output_mf[0].point2 = 0.f;
-  output_mf[0].slope1 = 0.f;
-  output_mf[0].slope2 = -0.5f;
+  create_mf(output_mf+0,"MR--",-5.f,0.f,-5.f,1.f,-2.f,1.f,0.f,0.f);
 
-  sprintf(output_mf[1].name, "%s", "MR++");
-  output_mf[1].point1 = 0.f;
-  output_mf[1].point2 = 5.f;
-  output_mf[1].slope1 = 0.5f;
-  output_mf[1].slope2 = 0.f;
+  create_mf(output_mf+1,"MR++",0.f,0.f,2.f,1.f,5.f,1.f,5.f,0.f);
 
 
   /*initilize input/output system*/
@@ -231,8 +300,8 @@ void initialize_system(){
   sprintf(System_Outputs[0].name, "%s", "MR");
   memcpy(System_Outputs[0].membership_functions, output_mf, sizeof(output_mf));
 
-  sprintf(output_mf[0].name, "%s", "ML++");
-  sprintf(output_mf[1].name, "%s", "ML--");
+  sprintf(output_mf[0].name, "%s", "ML--");
+  sprintf(output_mf[1].name, "%s", "ML++");
   sprintf(System_Outputs[1].name, "ML");
   memcpy(System_Outputs[1].membership_functions, output_mf, sizeof(output_mf));
 
@@ -323,7 +392,8 @@ void put_system_outputs(){
     for(int j = 0; j < 2; j++){
       mfptr=ioptr.membership_functions[j];
       printf("  %s: Value %f Left %f Right %f\n",
-        mfptr.name,mfptr.value,mfptr.point1,mfptr.point2);
+        mfptr.name,mfptr.value,mfptr.trapezoid[0].straight_line[0].x,
+        mfptr.trapezoid[1].straight_line[1].x);
     }
 
     printf("\n");
@@ -336,7 +406,8 @@ void put_system_outputs(){
     for(int j = 0; j < 2; j++){
       mfptr=ioptr.membership_functions[j];
           printf("  %s: Value %f Left %f Right %f\n",
-            mfptr.name,mfptr.value,mfptr.point1,mfptr.point2);
+            mfptr.name,mfptr.value,mfptr.trapezoid[0].straight_line[0].x,
+            mfptr.trapezoid[1].straight_line[1].x);
     }
   }
   /* print values pointed to by rule_type (if & then) */
@@ -376,33 +447,29 @@ void RunRobotStop(struct Robot *robot){ShowUserInfo(1,2);}
 
 boolean StepRobot(struct Robot *robot)
 {
-  if(pas == 0){
-    initialize_system();
-  }
+  
   pas++;
   DrawPas();
   
-  float left = (float)(robot->IRSensor[0].DistanceValue 
-               + robot->IRSensor[1].DistanceValue 
-               + robot->IRSensor[2].DistanceValue) / 3;
+  float left = (float)max_f(robot->IRSensor[0].DistanceValue 
+               , robot->IRSensor[1].DistanceValue 
+               , robot->IRSensor[2].DistanceValue);
 
-  float right = (float)(robot->IRSensor[4].DistanceValue 
-               + robot->IRSensor[5].DistanceValue 
-               + robot->IRSensor[6].DistanceValue) / 3;
+  float right = (float)max_f(robot->IRSensor[3].DistanceValue 
+               , robot->IRSensor[4].DistanceValue 
+               , robot->IRSensor[5].DistanceValue);
 
+  initialize_system();
   get_system_inputs(left,right);
   fuzzification();
   rule_evaluation();
+  aggregation();
   defuzzification();
   put_system_outputs();
   robot->Motor[LEFT].Value  = System_Outputs[0].value;
   robot->Motor[RIGHT].Value = System_Outputs[1].value;
 
-  if ((robot->IRSensor[6].DistanceValue > COLLISION_TH)||  /* collision in */
-      (robot->IRSensor[7].DistanceValue > COLLISION_TH))   /*   the back   */
-    return(FALSE);
-  else
-    return(TRUE);
+  return(TRUE);
 }
 boolean StepMultiRobots(struct MultiRobots *multi)
 {

@@ -123,7 +123,7 @@ float input;
 	float delta_1;
 	float delta_2;
 	delta_1 = input - mf->trapezoid[0].straight_line[0].x;
-	delta_2 = mf->trapezoid[1].straight_line[0].x - input;
+	delta_2 = mf->trapezoid[1].straight_line[1].x - input;
 
 	if ((delta_1 < 0) || (delta_2 < 0))   /* input outside mem. function ? */
 		mf->value = 0;                      /* then degree of membership is 0 */
@@ -171,8 +171,8 @@ void rule_evaluation(){
 	struct rule_element_type *tp;       /* pointer to consequences (then-parts) 	   */
 	float strength;                		/* strength of  rule currently being evaluated */
  
+ 	strength = UPPER_LIMIT;                       /* max rule strength allowed */
 	for(rule=Rule_Base; rule != NULL; rule=rule->next){
-		strength = UPPER_LIMIT;                       /* max rule strength allowed */
         /* process if-side of rule to determine strength */
 		for(ip=rule->if_side; ip != NULL; ip=ip->next)
 			strength = min(strength,*(ip->value));
