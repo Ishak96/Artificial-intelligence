@@ -18,9 +18,8 @@ LIBS   = -L/usr/lib -lX11 -lm
 CC = gcc $(LIBS)
 
 sim:
-	gcc -L/usr/lib -lX11 -lm SRC/robot.c SRC/world.c SRC/graphics.c SRC/khep_serial.c USER/user.c SRC/sim.c -o sim -lX11 -lm
+	gcc -L/usr/lib -lX11 -lm SRC/robot.c SRC/world.c SRC/graphics.c SRC/khep_serial.c CONTRIB/multirobots.c USER/user.c SRC/sim.c -o sim -lX11 -lm
 
 
 clean:
 	rm -f sim OBJ/*.o
-

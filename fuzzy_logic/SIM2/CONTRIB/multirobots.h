@@ -22,6 +22,8 @@
 #ifndef MULTIROBOTS_H
 #define MULTIROBOTS_H
 
+#include "../SRC/header.h"
+
 #define D_MAX         50.0   /* max. dist. between 2 robots for mutual perc. */
 #define IR_MAX        1023   /* max. value of IR captors */
 
