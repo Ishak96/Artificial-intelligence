@@ -311,7 +311,7 @@ void initialize_system(){
   System_Outputs[1].nb_mf = 3;
   memcpy(System_Outputs[1].membership_functions, output_mf, sizeof(output_mf));
 
-  if((fp=fopen("rules","r"))==NULL){  
+  if((fp=fopen("USER/rules","r"))==NULL){  
     printf("ERROR- Unable to open data file named %s.\n","rules");
     exit(0);
   }
