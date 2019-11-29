@@ -152,8 +152,12 @@ struct mf_type mf;
 	float base;
 	float top;
 	float area;
+	float run_1,run2;
+
+	run_1 = mf->value/mf.straight_line[0].slopes;
+	run_2 = mf->value/mf->straight_line[1].slopes;
  	base = mf.trapezoid[0].straight_line[0].x - mf.trapezoid[1].straight_line[1].x;
-	top = mf.trapezoid[0].straight_line[1].x - mf.trapezoid[1].straight_line[0].x;
+	top = base-run_1-run_2;
 	area = mf.value * ( base + top ) / 2;
 	return(area);
 }

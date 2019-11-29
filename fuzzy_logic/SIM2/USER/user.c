@@ -22,7 +22,7 @@
 #define FORWARD_SPEED   5                    /* normal (slow) forward speed*/
 #define TURN_SPEED      4                    /* normal (slow) turn speed */
 #define COLLISION_TH    500                  /* value of IR sensors to be considered as collision */
-#define MAXNAME 10          /* max number of characters in names*/
+#define MAXNAME 20          /* max number of characters in names*/
 #define max(a,b)     (a<b ? b : a)
 #define min(a,b)     (a>b ? b : a)
 #define max_f(a,b,c) (c>max(a,b) ? c : max(a,b))
@@ -48,7 +48,8 @@ struct mf_type{
 struct io_type{
   char name[MAXNAME];                       /*  name of system input/output       */
   float value;                              /*  value of system input/output      */
-  struct mf_type membership_functions[2];   /*  list of membership functions for this system input/outputs  */
+  struct mf_type membership_functions[3];   /*  list of membership functions for this system input/outputs  */
+  int nb_mf;
 };
 
 /*  Each rule has an if side and a then side. Elements making up if side are
@@ -163,9 +164,7 @@ float input;
 
 /* Compute Area of Trapezoid--Each inference pass produces a new set of output
 strengths which affect the areas of trapezoidal membership functions used in
-center-of-gravity defuzzification. Area values must be recalculated with each
-pass. Area of trapezoid is h*(a+b)/2 where h=height=output_strength=mf->value
-b=base=mf->point2-mf->point1 a=top= must be derived from h,b, and slopes1&2 */
+center-of-gravity defuzzification.*/
 float compute_area_of_trapezoid(mf)
 struct mf_type mf;
 {
@@ -182,9 +181,7 @@ struct mf_type mf;
 (if side), list of pointers to outputs (then side), and pointer to next rule
 in rule base. When a rule is evaluated, its antecedents are ANDed together,
 using a minimum function, to form strength of rule. Then strength is applied
-to each of listed rule outputs. If an output has already been assigned a rule
-strength, during current inference pass, a maximum function is used to
-determine which strength should apply. */
+to each of listed rule outputs.*/
 void rule_evaluation(){
   struct rule_type *rule;
   struct rule_element_type *ip;       /* pointer of antecedents  (if-parts)        */
@@ -194,10 +191,8 @@ void rule_evaluation(){
   for(rule=Rule_Base; rule != NULL; rule=rule->next){
     strength = UPPER_LIMIT;                       /* max rule strength allowed */
         /* process if-side of rule to determine strength */
-    printf("if_side\n");
     for(ip=rule->if_side; ip != NULL; ip=ip->next){
       strength = min(strength,*(ip->value));
-      printf("strength = %f, value = %f\n", strength, *(ip->value));
     }
     /* process then-side of rule to apply strength */
     for(tp=rule->then_side; tp != NULL; tp=tp->next)
@@ -213,7 +208,7 @@ void fuzzification(){
   
   for(int i = 0; i < 2; i++){
     si=System_Inputs+i;
-    for(int j = 0; j < 2; j++){
+    for(int j = 0; j < si->nb_mf; j++){
       mf=si->membership_functions+j;
       compute_degree_of_membership(mf,si->value);
     }
@@ -227,7 +222,7 @@ void aggregation(){
   
   for(int i = 0; i < 2; i++){
     si=System_Outputs+i;
-    for(int j = 0; j < 2; j++){
+    for(int j = 0; j < si->nb_mf; j++){
       mf=si->membership_functions+j;
       clipping_trapezoid(mf);
     }
@@ -249,7 +244,7 @@ void defuzzification(){
     sum_of_products = 0;
     sum_of_areas = 0;
     
-    for(int j = 0; j < 2; j++){
+    for(int j = 0; j < so->nb_mf; j++){
       mf=so->membership_functions[j];
       area = compute_area_of_trapezoid(mf);
       centroid = (mf.trapezoid[0].straight_line[1].x + mf.trapezoid[1].straight_line[0].x) / 2.f;
@@ -276,33 +271,43 @@ void initialize_system(){
   ifptr=NULL;
   thenptr=NULL;
 
-  struct mf_type input_mf[2], output_mf[2];
+  struct mf_type input_mf[3], output_mf[3];
   
   /*create membership function for input/output system*/
-  create_mf(input_mf+0,"CL_FAR",0.f,0.f,0.f,1.f,408.f,1.f,511.5f,0.f);
+  create_mf(input_mf+0,"CL_FAR",0.f,0.f,0.f,1.f,100.f,1.f,250.f,0.f);
 
-  create_mf(input_mf+1,"CL_NEAR",511.5f,0.f,810.f,1.f,1023.f,1.f,1023.f,0.f);
+  create_mf(input_mf+1,"CL_MEDIUM",150.f,0.f,250.f,1.f,250.f,1.f,300.f,0.f);
 
-  create_mf(output_mf+0,"MR--",-5.f,0.f,-5.f,1.f,-2.f,1.f,0.f,0.f);
+  create_mf(input_mf+2,"CL_NEAR",200.f,0.f,300.f,1.f,1023.f,1.f,1023.f,0.f);
 
-  create_mf(output_mf+1,"MR++",0.f,0.f,2.f,1.f,5.f,1.f,5.f,0.f);
+  create_mf(output_mf+0,"MR--",-4.f,0.f,-3.f,1.f,-2.f,1.f,-1.f,0.f);
+
+  create_mf(output_mf+1,"MR00",0.f,0.f,-0.2f,1.f,-0.2f,1.f,0.5f,0.f);  
+
+  create_mf(output_mf+2,"MR++",3.f,0.f,4.f,1.f,5.f,1.f,5.f,0.f);
 
 
   /*initilize input/output system*/
   sprintf(System_Inputs[0].name, "%s", "CL");
+  System_Inputs[0].nb_mf = 3;
   memcpy(System_Inputs[0].membership_functions, input_mf, sizeof(input_mf));
 
   sprintf(input_mf[0].name, "%s", "CR_FAR");
-  sprintf(input_mf[1].name, "%s", "CR_NEAR");
+  sprintf(input_mf[1].name, "%s", "CR_MEDIUM");
+  sprintf(input_mf[2].name, "%s", "CR_NEAR");
   sprintf(System_Inputs[1].name, "%s", "CR");
+  System_Inputs[1].nb_mf = 3;
   memcpy(System_Inputs[1].membership_functions, input_mf, sizeof(input_mf));
 
   sprintf(System_Outputs[0].name, "%s", "MR");
+  System_Outputs[0].nb_mf = 3;
   memcpy(System_Outputs[0].membership_functions, output_mf, sizeof(output_mf));
 
   sprintf(output_mf[0].name, "%s", "ML--");
-  sprintf(output_mf[1].name, "%s", "ML++");
+  sprintf(output_mf[1].name, "%s", "ML00");
+  sprintf(output_mf[2].name, "%s", "ML++");
   sprintf(System_Outputs[1].name, "ML");
+  System_Outputs[1].nb_mf = 3;
   memcpy(System_Outputs[1].membership_functions, output_mf, sizeof(output_mf));
 
   if((fp=fopen("rules","r"))==NULL){  
@@ -314,15 +319,14 @@ void initialize_system(){
   
   Rule_Base=ruleptr;     /* first time thru, anchor */
   
-
   while((x=fscanf(fp,"%s %s %s",buff,buff1,buff2))!=EOF){  
     int i = 0;
     ioptr=System_Inputs+i;               /* points to angle */
-    
-    for(int j = 0; j < 2; j++){ 
+
+    for(int j = 0; j < System_Inputs[i].nb_mf; j++){ 
       mfptr=ioptr->membership_functions+j;
       if((strcmp(mfptr->name,buff))==0){  
-
+        
         ifptr=(struct rule_element_type *)
         calloc(1,sizeof(struct rule_element_type));
         ruleptr->if_side=ifptr;      /* points to angle */
@@ -333,11 +337,12 @@ void initialize_system(){
         break;                       /* match found */
       }
     }
-    
+
     i++;
-    ioptr=System_Inputs+i; 
-    for(int j = 0; j < 2; j++){ 
-      mfptr=ioptr->membership_functions+j; 
+    ioptr=System_Inputs+i;  
+    for(int j = 0; j < System_Inputs[i].nb_mf; j++){
+      mfptr=ioptr->membership_functions+j;
+      
       if((strcmp(mfptr->name,buff1))==0){  
         ifptr->value=&mfptr->value;  /* needs address here */
         break;                       /* match found */
@@ -348,7 +353,7 @@ void initialize_system(){
     for(int k = 0; k < 2 && !find; k++){
       outptr=System_Outputs+k;/* point then stuff to output */
       
-      for(int j = 0; j < 2 && !find; j++){
+      for(int j = 0; j < outptr->nb_mf && !find; j++){
         mfptr=outptr->membership_functions+j;
         if((strcmp(mfptr->name,buff2))==0){  
           
@@ -385,7 +390,7 @@ void put_system_outputs(){
   struct rule_element_type *thenptr;
   int cnt=1;
   
-  for(int i = 0; i < 2; i++){
+  for(int i = 0; i < 3; i++){
     ioptr=System_Inputs[i];
     printf("%s: Value= %f\n",ioptr.name,ioptr.value);
 
@@ -465,12 +470,12 @@ boolean StepRobot(struct Robot *robot)
   rule_evaluation();
   aggregation();
   defuzzification();
-  put_system_outputs();
   robot->Motor[LEFT].Value  = System_Outputs[0].value;
   robot->Motor[RIGHT].Value = System_Outputs[1].value;
 
   return(TRUE);
 }
+
 boolean StepMultiRobots(struct MultiRobots *multi)
 {
   struct Robot *robot;
