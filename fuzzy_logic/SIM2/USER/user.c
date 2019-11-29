@@ -257,6 +257,7 @@ void defuzzification(){
 }
 
 void initialize_system(){
+  float seuil = 1.f;
   int a, b, c, d, x;
   char buff[10],buff1[10],buff2[10];
   FILE *fp;
@@ -276,15 +277,15 @@ void initialize_system(){
   /*create membership function for input/output system*/
   create_mf(input_mf+0,"CL_FAR",0.f,0.f,0.f,1.f,100.f,1.f,250.f,0.f);
 
-  create_mf(input_mf+1,"CL_MEDIUM",150.f,0.f,250.f,1.f,250.f,1.f,300.f,0.f);
+  create_mf(input_mf+1,"CL_MEDIUM",150.f,0.f,250.f,1.f,200.f,1.f,300.f,0.f);
 
   create_mf(input_mf+2,"CL_NEAR",200.f,0.f,300.f,1.f,1023.f,1.f,1023.f,0.f);
 
-  create_mf(output_mf+0,"MR--",-4.f,0.f,-3.f,1.f,-2.f,1.f,-1.f,0.f);
+  create_mf(output_mf+0,"MR--",-5.f-seuil,0.f,-5.f-seuil,1.f,-2.f,1.f,0.f,0.f);
 
-  create_mf(output_mf+1,"MR00",0.f,0.f,-0.2f,1.f,-0.2f,1.f,0.5f,0.f);  
+  create_mf(output_mf+1,"MR00",-2.f,0.f,0.f,1.f,0.f,1.f,2.f,0.f);  
 
-  create_mf(output_mf+2,"MR++",3.f,0.f,4.f,1.f,5.f,1.f,5.f,0.f);
+  create_mf(output_mf+2,"MR++",0.f,0.f,2.f,1.f,5.f+seuil,1.f,5.f+seuil,0.f);
 
 
   /*initilize input/output system*/
