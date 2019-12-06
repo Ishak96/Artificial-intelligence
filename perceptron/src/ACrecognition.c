@@ -3,6 +3,7 @@
 #include<GL/gl.h>
 #include<GL/glut.h>
 #include<GL/glu.h>
+#include<perceptron.h>
 
 #define height 500
 #define width 500
@@ -115,6 +116,8 @@ char** argv;
 		printf("Usage -> %s [learning process file]\n", argv[0]);
 		return -1;
 	}*/
+
+	srand((unsigned int)time(NULL));
 
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH);

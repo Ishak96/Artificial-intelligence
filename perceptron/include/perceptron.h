@@ -13,13 +13,18 @@ typedef float (*outEvaluate)(float x);
 
 typedef struct {
 	int output_layer_size;
-	int weight_size;
+	int input_layer_size;
 	float* output;
+	float* desired_output;
 	float* weight;
+	float weight_interval[2];
 	outEvaluate funcEvaluation;
 }perceptron;
 
-float randomFloat();
+float randomWeight(float min, float max);
 float heaviside(float x);
+perceptron initialize_perceptron(float weight_interval[2], float* desired_output, 
+								 int output_layer_size, int input_layer_size);
+void destroy_perceptron(perceptron* network);
 
 #endif

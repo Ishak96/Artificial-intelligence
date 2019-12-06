@@ -37,7 +37,7 @@ $(OBJECTS): $(OBJDIR)/%.o : $(SRCDIR)/%.c
 test: $(TESTBINS)
 
 $(TESTBINS): $(TESTOBJ) $(OBJECTS)
-	$(CC) $(filter-out obj/main.o $(filter-out $(patsubst $(BINDIR)/%,$(OBJDIR)/%.o,$@), $(TESTOBJ)), $(OBJECTS) $(TESTOBJ)) -o $@ $(LFLAGS)
+	$(CC) $(filter-out obj/ACrecognition.o $(filter-out $(patsubst $(BINDIR)/%,$(OBJDIR)/%.o,$@), $(TESTOBJ)), $(OBJECTS) $(TESTOBJ)) -o $@ $(LFLAGS)
 
 $(TESTOBJ): $(TESTS)
 	$(CC) $(CFLAGS) -c $(patsubst $(OBJDIR)/%.o,$(TESTDIR)/%.c,$@) -o $@
