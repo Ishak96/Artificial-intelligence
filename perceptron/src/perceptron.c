@@ -12,6 +12,10 @@ float neutral(float x){
 	return x;
 }
 
+float sigmoid(float x){
+   return 1 / (1 + exp(-x));
+}
+
 perceptron initialize_perceptron(float min, float max, int output_layer_size, 
 									int input_layer_size, outActivation funcActivation){
 	perceptron network;
@@ -87,27 +91,23 @@ void learn_perceptron(char* file, perceptron* network){
 	
 	for(int k = 0; k < MAX_ITERATION; k++){
 		float ei;
-		int it = 0;
-		while(it < MAX_ITERATION){
 
-			float weight_som = 0;
+		float weight_som = 0;
 			
-			int index = rand() % line;
+		int index = rand() % line;
 
-			for(int i = 0; i < size_output; i++){
-				for(int j = 0; j < size_input; j++){
-					weight_som += (network->weight[i*size_input+j] * input[index][j]) - BIAIS;
-				}
-				
-				network->output[i] = network->funcActivation(weight_som);
-				ei = output[index][i]-network->output[i];
-				
-				for(int j = 0; j < size_input; j++){
-					network->weight[i*size_input+j] = network->weight[i*size_input+j] 
-														+ LEARNING_RATE * ei * input[index][j];
-				}
+		for(int i = 0; i < size_output; i++){
+			for(int j = 0; j < size_input; j++){
+				weight_som += (network->weight[i*size_input+j] * input[index][j]) - BIAIS;
 			}
-			it++;
+				
+			network->output[i] = network->funcActivation(weight_som);
+			ei = output[index][i]-network->output[i];
+				
+			for(int j = 0; j < size_input; j++){
+				network->weight[i*size_input+j] = network->weight[i*size_input+j] 
+														+ LEARNING_RATE * ei * input[index][j];
+			}
 		}
 	}
 

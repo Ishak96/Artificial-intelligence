@@ -10,7 +10,7 @@
 
 #define LEARNING_RATE    1
 #define BIAIS	    	 0
-#define MAX_ITERATION    1000
+#define MAX_ITERATION    10000
 #define DELTA			 0.000001
 
 typedef float (*outActivation)(float x);
@@ -26,6 +26,7 @@ typedef struct {
 float randomWeight(float min, float max);
 float heaviside(float x);
 float neutral(float x);
+float sigmoid(float x);
 perceptron initialize_perceptron(float min, float max, int output_layer_size, 
 									int input_layer_size, outActivation funcActivation);
 void destroy_perceptron(perceptron* network);
