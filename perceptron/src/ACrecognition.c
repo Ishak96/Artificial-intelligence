@@ -13,12 +13,27 @@
 
 #define MAXGRID 20
 
+#define OUTPUT_NB 2
+#define INPUT_NB 20
+
 #define sign(a)    (a<0 ? -1 : (a>0 ? 1 : 0))
 
 int caseHeight = height / cellI;
 int caseWidth = width / cellJ;
 
 int* grid;
+int* grid_test;
+
+perceptron network;
+
+void print_result(){
+	if(network.output[0] == 1 && network.output[1] == 0){
+		printf("The perceptron recognize [A]\n");
+	}
+	else{
+		printf("The perceptron recognize [C]\n");
+	}
+}
 
 int convertPoint(p,limit)
 int p, limit;
@@ -26,8 +41,25 @@ int p, limit;
 	return sign(p-limit) * (p-limit);
 }
 
-void initGrid(int* grid_init){
+void initSystem(){
 	grid = (int *) calloc(MAXGRID, sizeof(int));
+	grid_test = (int *) calloc(MAXGRID, sizeof(int));
+	
+	int output_layer_size = OUTPUT_NB;
+	int input_layer_size = INPUT_NB;
+	float weight_interval[2] = {0.0, 1.0};
+
+	network = initialize_perceptron(weight_interval, output_layer_size, input_layer_size, heaviside);
+
+	char* fileC = "data/dataC.dat";
+	float desired_outputC[OUTPUT_NB] = {0.0, 1.0};
+
+	learn_perceptron(fileC, &network, desired_outputC);
+
+	char* fileA = "data/dataA.dat";
+	float desired_outputA[OUTPUT_NB] = {1.0, 0.0};
+
+	learn_perceptron(fileA, &network, desired_outputA);
 }
 
 void onMouseClick(button,state,x,y)
@@ -35,12 +67,24 @@ int button,state,x,y;
 {
 	if(button==GLUT_LEFT_BUTTON && state==GLUT_UP){
 		int i = convertPoint(y/caseHeight,cellI) - 1;
+		int i_test = y/caseHeight;
 		int j = x/caseWidth;
+		
 		grid[i*cellJ+j] = 1 - grid[i*cellJ+j];
+		grid_test[i_test*cellJ+j] = 1 - grid_test[i_test*cellJ+j];
 
 		glutPostRedisplay();
 	}
 }
+
+void keyPressed(unsigned char key, int x, int y) {  
+	if(key - '0' == -35){
+		if(grid != NULL){
+			test_phase(grid_test, &network);
+			print_result();
+		}
+	}
+}  
 
 void drawPaper(void)
 {
@@ -111,11 +155,6 @@ int main(argc, argv)
 int argc;
 char** argv;
 {
-	/*if(argc < 2){
-		fprintf(stderr, "ERROR missing parameter\n");
-		printf("Usage -> %s [learning process file]\n", argv[0]);
-		return -1;
-	}*/
 
 	srand((unsigned int)time(NULL));
 
@@ -126,15 +165,21 @@ char** argv;
 	glutCreateWindow("ACrecognition");
 
 	init();
-	initGrid(grid);
+	initSystem();
 
 	glutDisplayFunc(display);
 	glutMouseFunc(onMouseClick);
+	glutKeyboardFunc(keyPressed);
 
 	glutMainLoop();
 	
 	if(grid)
 		free(grid);
+
+	if(grid_test)
+		free(grid_test);
+
+	destroy_perceptron(&network);
 
 	return 0;
 }
