@@ -9,7 +9,7 @@
 #include <time.h>
 
 #define LEARNING_RATE    1
-#define BIAIS	    	 0
+#define BIAIS			 0
 #define MAX_ITERATION    10000
 #define DELTA			 0.000001
 

@@ -27,7 +27,7 @@ int* grid_test;
 perceptron network;
 
 void print_result(float* output){
-	if(output[0]){
+	if(output[0] > output[1]){
 		printf("The perceptron recognize [A]\n");
 	}
 	else{

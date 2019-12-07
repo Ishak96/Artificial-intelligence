@@ -89,19 +89,20 @@ void learn_perceptron(char* file, perceptron* network){
 			fscanf(fp, "%f", output[k]+l);
 	}
 	
+	int index = 0;
 	for(int k = 0; k < MAX_ITERATION; k++){
 		float ei;
 
 		float weight_som = 0;
 			
-		int index = rand() % line;
+		index = 1 - index;//rand() % line;
 
 		for(int i = 0; i < size_output; i++){
 			for(int j = 0; j < size_input; j++){
-				weight_som += (network->weight[i*size_input+j] * input[index][j]) - BIAIS;
+				weight_som += (network->weight[i*size_input+j] * input[index][j]);
 			}
 				
-			network->output[i] = network->funcActivation(weight_som);
+			network->output[i] = network->funcActivation(weight_som - BIAIS);
 			ei = output[index][i]-network->output[i];
 				
 			for(int j = 0; j < size_input; j++){
