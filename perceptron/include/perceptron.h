@@ -8,10 +8,11 @@
 #include <math.h>
 #include <time.h>
 
-#define LEARNING_RATE    1
+#define LEARNING_RATE	 1
 #define BIAIS			 0
-#define MAX_ITERATION    10000
+#define MAX_ITERATION	 100000
 #define DELTA			 0.000001
+#define INFINI			 1000000
 
 typedef float (*outActivation)(float x);
 
@@ -32,6 +33,7 @@ perceptron initialize_perceptron(float min, float max, int output_layer_size,
 void destroy_perceptron(perceptron* network);
 float** alloc_matrix(int rows, int cols);
 void free_matrix(int rows, float** matrix);
+int error_check(float* error, int size);
 void learn_perceptron(char* file, perceptron* network);
 float* test_phase(int* input, perceptron network);
 

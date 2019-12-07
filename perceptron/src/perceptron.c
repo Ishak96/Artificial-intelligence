@@ -57,6 +57,13 @@ void free_matrix(int rows, float** matrix){
     free(matrix);
 }
 
+int error_check(float* error, int size){
+	int err = 1;
+	for(int i = 0; i < size; i++)
+		err = err && (error[i] >= -DELTA && error[i] <= DELTA);
+	return err;
+}
+
 void learn_perceptron(char* file, perceptron* network){
 	FILE* fp;
 	int line;
@@ -80,6 +87,9 @@ void learn_perceptron(char* file, perceptron* network){
 
 	float** input = alloc_matrix(line, size_input);
 	float** output = alloc_matrix(line, size_output);
+	float* error = (float *)malloc(line * sizeof(float));
+	for(int i = 0; i < line; i++)
+		error[i] = INFINI;
 
 	for(int k = 0; k < line; k++){
 		for(int l = 0; l < size_input; l++)
@@ -90,20 +100,24 @@ void learn_perceptron(char* file, perceptron* network){
 	}
 	
 	int index = 0;
+	//int index = 1;
 	for(int k = 0; k < MAX_ITERATION; k++){
 		float ei;
 
 		float weight_som = 0;
 			
-		index = 1 - index;//rand() % line;
+		//index = (k >= MAX_ITERATION / 2) ? 1 - index : index;
+		index = rand() % line;
 
 		for(int i = 0; i < size_output; i++){
 			for(int j = 0; j < size_input; j++){
 				weight_som += (network->weight[i*size_input+j] * input[index][j]);
 			}
 				
-			network->output[i] = network->funcActivation(weight_som - BIAIS);
+			network->output[i] = sigmoid(weight_som - BIAIS);
 			ei = output[index][i]-network->output[i];
+
+			error[index] = ei;
 				
 			for(int j = 0; j < size_input; j++){
 				network->weight[i*size_input+j] = network->weight[i*size_input+j] 
@@ -114,6 +128,7 @@ void learn_perceptron(char* file, perceptron* network){
 
 	free_matrix(line, input);
 	free_matrix(line, output);
+	free(error);
 	fclose(fp);
 }
 
@@ -127,7 +142,7 @@ float* test_phase(int* input, perceptron network){
 		for(int j = 0; j < size_input; j++){
 			weight_som += (network.weight[i*size_input+j] * input[j]) - BIAIS;
 		}
-		output[i] = network.funcActivation(weight_som);
+		output[i] = heaviside(weight_som);
 	}
 
 	return output;
