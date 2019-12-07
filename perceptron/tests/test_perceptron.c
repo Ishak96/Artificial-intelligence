@@ -19,19 +19,12 @@ int main(int argc, char const *argv[]){
 
 	int output_layer_size = OUTPUT_NB;
 	int input_layer_size = INPUT_NB;
-	float weight_interval[2] = {0.0, 1.0};
 
-	perceptron network = initialize_perceptron(weight_interval, output_layer_size, input_layer_size, heaviside);
+	perceptron network = initialize_perceptron(0, 1, output_layer_size, input_layer_size, heaviside);
 
-	char* fileC = "data/dataC.dat";
-	float desired_outputC[OUTPUT_NB] = {0.0, 1.0};
+	char* file = "data/data.dat";
 
-	learn_perceptron(fileC, &network, desired_outputC);
-
-	char* fileA = "data/dataA.dat";
-	float desired_outputA[OUTPUT_NB] = {1.0, 0.0};
-
-	learn_perceptron(fileA, &network, desired_outputA);
+	learn_perceptron(file, &network);
 
 	for(int i = 0; i < output_layer_size; i++){
 		printf("out put[%d] :\n", i);
@@ -40,17 +33,17 @@ int main(int argc, char const *argv[]){
 		}
 	}
 
-	test_phase(inputA, &network);
+	float* output = test_phase(inputA, network);
+	for(int i = 0; i < OUTPUT_NB; i++){
+		printf("output layer [%d] = %f\n", i, output[i]);
+	}
+	free(output);
 
+	output = test_phase(inputC, network);
 	for(int i = 0; i < OUTPUT_NB; i++){
 		printf("output layer [%d] = %f\n", i, network.output[i]);
 	}
-
-	test_phase(inputC, &network);
-
-	for(int i = 0; i < OUTPUT_NB; i++){
-		printf("output layer [%d] = %f\n", i, network.output[i]);
-	}
+	free(output);
 
 	destroy_perceptron(&network);
 

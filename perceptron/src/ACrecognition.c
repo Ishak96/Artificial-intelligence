@@ -26,8 +26,8 @@ int* grid_test;
 
 perceptron network;
 
-void print_result(){
-	if(network.output[0] == 1 && network.output[1] == 0){
+void print_result(float* output){
+	if(output[0] && !output[1]){
 		printf("The perceptron recognize [A]\n");
 	}
 	else{
@@ -47,19 +47,12 @@ void initSystem(){
 	
 	int output_layer_size = OUTPUT_NB;
 	int input_layer_size = INPUT_NB;
-	float weight_interval[2] = {0.0, 1.0};
 
-	network = initialize_perceptron(weight_interval, output_layer_size, input_layer_size, heaviside);
+	network = initialize_perceptron(0, 1, output_layer_size, input_layer_size, heaviside);
 
-	char* fileC = "data/dataC.dat";
-	float desired_outputC[OUTPUT_NB] = {0.0, 1.0};
+	char* file = "data/data.dat";
 
-	learn_perceptron(fileC, &network, desired_outputC);
-
-	char* fileA = "data/dataA.dat";
-	float desired_outputA[OUTPUT_NB] = {1.0, 0.0};
-
-	learn_perceptron(fileA, &network, desired_outputA);
+	learn_perceptron(file, &network);
 }
 
 void onMouseClick(button,state,x,y)
@@ -80,8 +73,9 @@ int button,state,x,y;
 void keyPressed(unsigned char key, int x, int y) {  
 	if(key - '0' == -35){
 		if(grid != NULL){
-			test_phase(grid_test, &network);
-			print_result();
+			float* output = test_phase(grid_test, network);
+			print_result(output);
+			free(output);
 		}
 	}
 }  
