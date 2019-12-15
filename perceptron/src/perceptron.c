@@ -13,7 +13,18 @@ float neutral(float x){
 }
 
 float sigmoid(float x){
-   return 1 / (1 + exp(-x));
+	if (fabs(x)<1e-10)
+		return 0.5;
+	else
+		return (1.0 / (1.0 + exp(-x)));
+}
+
+float gaussianNoise(int z){
+	float e = -(pow((z - MEAN), 2) / pow((2 * S_DEVIATION), 2));
+	float dividend = exp(e);
+	float divider = 1 / S_DEVIATION * sqrt(2 * PI);
+
+	return dividend * divider;
 }
 
 perceptron initialize_perceptron(float min, float max, int output_layer_size, 
@@ -37,9 +48,14 @@ perceptron initialize_perceptron(float min, float max, int output_layer_size,
 	return network;
 }
 
-void destroy_perceptron(perceptron* network){
-	if(network->output) free(network->output);
-	if(network->weight) free(network->weight);
+void destroy_perceptron(perceptron* network, DATA* data){
+	if(network->output) 
+		free(network->output);
+	if(network->weight) 
+		free(network->weight);
+
+	free_matrix(data->line, data->input);
+	free_matrix(data->line, data->output);
 }
 
 float** alloc_matrix(int rows, int cols){
@@ -64,9 +80,9 @@ int error_check(float* error, int size){
 	return err;
 }
 
-void learn_perceptron(char* file, perceptron* network){
+DATA get_data(const char* file, int input_layer_size, int output_layer_size){
 	FILE* fp;
-	int line;
+	DATA data;
 
 	if(file == NULL){
 		printf("learn:invalide file name entering %s %d\n", __FUNCTION__, __LINE__);
@@ -80,25 +96,33 @@ void learn_perceptron(char* file, perceptron* network){
 		exit(0);
 	}
 
-	int size_input = network->input_layer_size;
-	int size_output = network->output_layer_size;
+	data.size_input = input_layer_size;
+	data.size_output = output_layer_size;
 
-	fscanf(fp, "line = %d\n", &line);
+	fscanf(fp, "line = %d\n", &(data.line));
 
-	float** input = alloc_matrix(line, size_input);
-	float** output = alloc_matrix(line, size_output);
-	float* error = (float *)malloc(line * sizeof(float));
-	for(int i = 0; i < line; i++)
-		error[i] = INFINI;
+	float** input = alloc_matrix(data.line, data.size_input);
+	float** output = alloc_matrix(data.line, data.size_output);
 
-	for(int k = 0; k < line; k++){
-		for(int l = 0; l < size_input; l++)
+	for(int k = 0; k < data.line; k++){
+		for(int l = 0; l < data.size_input; l++)
 			fscanf(fp, "%f", input[k]+l);
 
-		for(int l = 0; l < size_output; l++)
+		for(int l = 0; l < data.size_output; l++)
 			fscanf(fp, "%f", output[k]+l);
 	}
+
+	data.input = input;
+	data.output = output;
+
+	fclose(fp);
+	return data;
+}
+
+void learn_perceptron(DATA data, perceptron* network){
 	
+	float* error = (float *)malloc(data.line * sizeof(float));
+
 	int index = 0;
 	//int index = 1;
 	for(int k = 0; k < MAX_ITERATION; k++){
@@ -107,29 +131,27 @@ void learn_perceptron(char* file, perceptron* network){
 		float weight_som = 0;
 			
 		//index = (k >= MAX_ITERATION / 2) ? 1 - index : index;
-		index = rand() % line;
+		index = rand() % data.line;
 
-		for(int i = 0; i < size_output; i++){
-			for(int j = 0; j < size_input; j++){
-				weight_som += (network->weight[i*size_input+j] * input[index][j]);
+		for(int i = 0; i < data.size_output; i++){
+			for(int j = 0; j < data.size_input; j++){
+				weight_som += (network->weight[i*data.size_input+j] 
+							   * gaussianNoise(data.input[index][j]));
 			}
 				
-			network->output[i] = sigmoid(weight_som - BIAIS);
-			ei = output[index][i]-network->output[i];
+			network->output[i] = network->funcActivation(weight_som - BIAIS);
+			ei = data.output[index][i]-network->output[i];
 
 			error[index] = ei;
 				
-			for(int j = 0; j < size_input; j++){
-				network->weight[i*size_input+j] = network->weight[i*size_input+j] 
-														+ LEARNING_RATE * ei * input[index][j];
+			for(int j = 0; j < data.size_input; j++){
+				network->weight[i*data.size_input+j] = network->weight[i*data.size_input+j] 
+													   + LEARNING_RATE * ei * data.input[index][j];
 			}
 		}
 	}
 
-	free_matrix(line, input);
-	free_matrix(line, output);
 	free(error);
-	fclose(fp);
 }
 
 float* test_phase(int* input, perceptron network){
@@ -142,7 +164,7 @@ float* test_phase(int* input, perceptron network){
 		for(int j = 0; j < size_input; j++){
 			weight_som += (network.weight[i*size_input+j] * input[j]) - BIAIS;
 		}
-		output[i] = heaviside(weight_som);
+		output[i] = network.funcActivation(weight_som);
 	}
 
 	return output;

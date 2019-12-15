@@ -23,8 +23,9 @@ int main(int argc, char const *argv[]){
 	perceptron network = initialize_perceptron(0, 1, output_layer_size, input_layer_size, heaviside);
 
 	char* file = "data/data.dat";
+	DATA data = get_data(file, input_layer_size, output_layer_size);
 
-	learn_perceptron(file, &network);
+	learn_perceptron(data, &network);
 
 	for(int i = 0; i < output_layer_size; i++){
 		printf("out put[%d] :\n", i);
@@ -45,7 +46,7 @@ int main(int argc, char const *argv[]){
 	}
 	free(output);
 
-	destroy_perceptron(&network);
+	//destroy_perceptron(&network, &data);
 
 	return 0;
 }

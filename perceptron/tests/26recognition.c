@@ -13,7 +13,7 @@
 
 #define MAXGRID 20
 
-#define OUTPUT_NB 2
+#define OUTPUT_NB 26
 #define INPUT_NB 20
 
 #define sign(a)    (a<0 ? -1 : (a>0 ? 1 : 0))
@@ -27,13 +27,35 @@ int* grid_test;
 perceptron network;
 DATA data;
 
+int max_index(float* table, int n){
+	int index = 0;
+	float max = table[index];
+	
+	for(int i = 1; i < n; i++){
+		if(max < table[i]){
+			index = i;
+			max = table[index];
+		}
+
+		else if(table[i] == 1){
+			index = i;
+			max = table[index];
+			break;
+		}
+	}
+
+	return index;
+}
+
+int ASCII_convert(int index){
+	return index + 65;
+}
+
 void print_result(float* output){
-	if(output[0] && !output[1]){
-		printf("The perceptron recognize [A]\n");
-	}
-	else{
-		printf("The perceptron recognize [C]\n");
-	}
+	int index = max_index(output, OUTPUT_NB);
+	int ascii = ASCII_convert(index);
+
+	printf("%c\n", (char)ascii);
 }
 
 int convertPoint(p,limit)
@@ -49,9 +71,9 @@ void initSystem(){
 	int output_layer_size = OUTPUT_NB;
 	int input_layer_size = INPUT_NB;
 
-	network = initialize_perceptron(0, 1, output_layer_size, input_layer_size, heaviside);
+	network = initialize_perceptron(0, 1, output_layer_size, input_layer_size, sigmoid);
 
-	char* file = "data/data.dat";
+	char* file = "data/data26.dat";
 
 	data = get_data(file, input_layer_size, output_layer_size);
 
