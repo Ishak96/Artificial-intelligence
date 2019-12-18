@@ -17,6 +17,8 @@
 #define MEAN 			 0.5
 #define S_DEVIATION		 0.25
 
+/*#define WRITE*/
+
 typedef float (*outActivation)(float x);
 
 typedef struct {
@@ -56,6 +58,8 @@ void free_matrix(int rows, float** matrix);
 int error_check(float* error, int size);
 
 DATA get_data(const char* file, int input_layer_size, int output_layer_size);
+
+void write_error(float** error, int line, int cols);
 
 void learn_perceptron(DATA data, perceptron* network);
 

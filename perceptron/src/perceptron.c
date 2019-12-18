@@ -119,30 +119,61 @@ DATA get_data(const char* file, int input_layer_size, int output_layer_size){
 	return data;
 }
 
+void write_error(float** error, int line, int cols){
+	char fileN[11];
+
+	for(int i = 0; i < line; i++){
+		sprintf(fileN, "data_%c.dat", (i== 0) ? 'A' : 'C');
+		FILE * fp = fopen(fileN,"w+");
+
+		if(fp == NULL)
+			fprintf(stderr, "can not open file !\n");
+
+		fprintf(fp, "Curve of %c learning error\n", (i == 0) ? 'A' : 'C');
+
+		for(int j = 0; j < cols; j++){
+			fprintf(fp,"%d %f\n", j, error[i][j]);
+		}
+
+		fclose(fp);
+	}
+}
+
 void learn_perceptron(DATA data, perceptron* network){
 	
-	float* error = (float *)malloc(data.line * sizeof(float));
+	#ifdef WRITE
+		float** error = (float **)malloc(data.line * sizeof(float*));
+		for(int i = 0; i < data.line; i++)
+			error[i] = (float *)malloc((MAX_ITERATION / 2) * sizeof(float));
+	#endif
 
 	int index = 0;
 	//int index = 1;
 	for(int k = 0; k < MAX_ITERATION; k++){
 		float ei;
-
-		float weight_som = 0;
 			
-		//index = (k >= MAX_ITERATION / 2) ? 1 - index : index;
+		//index = (k == MAX_ITERATION / 2) ? 1 + index : index;
+		//index = (k == MAX_ITERATION / 2) ? 1 - index : index;
 		index = rand() % data.line;
 
 		for(int i = 0; i < data.size_output; i++){
+			float weight_som = 0;
+
 			for(int j = 0; j < data.size_input; j++){
 				weight_som += (network->weight[i*data.size_input+j] 
-							   * gaussianNoise(data.input[index][j]));
+							   * (data.input[index][j]));
 			}
 				
-			network->output[i] = network->funcActivation(weight_som - BIAIS);
+			network->output[i] = sigmoid(weight_som - BIAIS);
 			ei = data.output[index][i]-network->output[i];
 
-			error[index] = ei;
+			#ifdef WRITE
+				if(data.output[index][i]){
+					int cols = (index == 1) ? k - MAX_ITERATION / 2 : k;
+					//int cols = (index == 0) ? k - MAX_ITERATION / 2 : k;
+					error[index][cols] = ei;
+				}
+			#endif
 				
 			for(int j = 0; j < data.size_input; j++){
 				network->weight[i*data.size_input+j] = network->weight[i*data.size_input+j] 
@@ -151,7 +182,14 @@ void learn_perceptron(DATA data, perceptron* network){
 		}
 	}
 
-	free(error);
+	#ifdef WRITE
+		write_error(error, data.line, MAX_ITERATION / 2);
+
+		for(int i = 0; i < data.line; i++)
+			free(error[i]);
+
+		free(error);
+	#endif
 }
 
 float* test_phase(int* input, perceptron network){

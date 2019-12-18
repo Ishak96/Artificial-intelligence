@@ -55,7 +55,7 @@ void print_result(float* output){
 	int index = max_index(output, OUTPUT_NB);
 	int ascii = ASCII_convert(index);
 
-	printf("%c\n", (char)ascii);
+	printf("perceptron recognize [%c]\n", (char)ascii);
 }
 
 int convertPoint(p,limit)
