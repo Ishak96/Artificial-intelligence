@@ -28,7 +28,6 @@ perceptron network;
 DATA data;
 
 void print_result(float* output){
-	printf("%f %f\n", output[0], output[1]);
 	if(output[0] && !output[1]){
 		printf("The perceptron recognize [A]\n");
 	}
