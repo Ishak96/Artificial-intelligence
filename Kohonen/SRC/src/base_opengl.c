@@ -1,11 +1,3 @@
-/*
-#########################
-Installation des packages
-sudo apt install libglu1-mesa-dev freeglut3-dev mesa-common-dev
-#########################
-Simple programme d'affichage de points et de segments en opengl
-utilise GL et glut
-*/
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
@@ -222,8 +214,7 @@ void affichage()
   glTexCoord2i(1, 0); glVertex2i(width, 0);
   glEnd();
 
-  for (i = 0; i < NB_VILLE; i++)
-  {
+  for (i = 0; i < NB_VILLE; i++){
     glBegin(GL_POINTS);
     glColor3f(1.0, 0.0, 0.0);
     glVertex2f(ville[i].x, ville[i].y);
@@ -232,13 +223,9 @@ void affichage()
     draw_text(ville[i].x - 20, ville[i].y + 20, "%s", ville[i].name);
   }
 
- // glColor3f(1.0, 1.0, 1.0);
-
 draw_text(60, 70, "nb iter: %d", cpt);
 #else
-
 // VOTRE CODE D'AFFICHAGE ICI, voir l'exemple ci-dessous
-
 // ceci est un exemple pour tracer des points et des lignes
  glBegin(GL_POINTS);
  glColor3f(1.0,0.0,0.0);
@@ -282,11 +269,10 @@ void clavier(unsigned char touche, int x, int y) {
     calc = !calc;
     break;
 
-  case 'q': /* la touche 'q' permet de quitter le programme */
+  case 'q':
     exit(0);
-  } /* switch */
-
-} /* clavier */
+  }
+}
 
 void reshape(GLsizei newwidth, GLsizei newheight)
 {
@@ -297,7 +283,7 @@ void reshape(GLsizei newwidth, GLsizei newheight)
   height = newheight;
   #endif
   // Set the viewport to cover the new window
-  glViewport(0, 0,newwidth ,newheight );
+  glViewport(0, 0,newwidth ,newheight);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
 

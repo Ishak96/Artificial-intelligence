@@ -6,6 +6,11 @@
 #include <time.h>
 
 typedef struct{
+	double x,y;
+	char name[50];
+}CITY;
+
+typedef struct{
 	int size;
 	double* input;
 	int drawn;
@@ -29,8 +34,13 @@ void distroyTRAINING_DATA(TRAINING_DATA* dataSet);
 
 void create_DATA(DATA* data, int size, double min, double max);
 
-void InitialiseSet(TRAINING_DATA* dataSet, double min, double max);
+void InitialiseSet(TRAINING_DATA* dataSet, int size, int num_in,
+				   double min, double max);
 
-DATA SortData(TRAINING_DATA* dataSet);
+int DataSorted(TRAINING_DATA dataSet);
+
+DATA SortData(TRAINING_DATA dataSet);
+
+void dump_DATASET(TRAINING_DATA Dataset);
 
 #endif

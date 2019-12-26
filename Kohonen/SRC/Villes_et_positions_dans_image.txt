@@ -1,3 +1,4 @@
+nombre de villes = 22
 Bordeaux 255 493
 Bayonne 212 592
 Toulouse 366 592

@@ -47,7 +47,10 @@ void create_DATA(DATA* data, int size, double min, double max){
 	}
 }
 
-void InitialiseSet(TRAINING_DATA* dataSet, double min, double max){
+void InitialiseSet(TRAINING_DATA* dataSet, int size, int num_in,
+				   double min, double max){
+
+	init_TRAINING_DATA(dataSet, size, num_in);
 	if(dataSet->entries == NULL){
 		fprintf(stderr, "Invalid pointer\n");
 		exit(0);
@@ -58,23 +61,38 @@ void InitialiseSet(TRAINING_DATA* dataSet, double min, double max){
 	}
 }
 
-DATA SortData(TRAINING_DATA* dataSet){
-	int findDATA = 0;
-	int index = 0;
-	DATA dataS = dataSet->entries[index];
+int DataSorted(TRAINING_DATA dataSet){
+	int som = 0;
 
-	srand(time(NULL));
-
-	while(!findDATA){
-		int i = rand()%dataSet->size;
-
-		if(!dataSet->entries[i].drawn){
-			dataSet->entries[i].drawn = 1;
-			findDATA = 1;
-			index = i;
-		}
+	for(int i = 0; i < dataSet.size; i++){
+		som += dataSet.entries[i].drawn;
 	}
 
-	dataS = dataSet->entries[index];
+	return som == dataSet.size-1;
+}
+
+DATA SortData(TRAINING_DATA dataSet){
+	DATA dataS;
+	
+	int i = rand()%dataSet.size;
+
+	dataSet.entries[i].drawn = 1;
+	dataS = dataSet.entries[i];
+
 	return dataS;
+}
+
+void dump_DATASET(TRAINING_DATA Dataset){
+	for(int i = 0; i < Dataset.size; i++){
+		printf("         DRAWN[%d]\n", Dataset.entries[i].drawn);
+		for(int j = 0; j < Dataset.num_in; j++){
+			printf("%f\t", Dataset.entries[i].input[j]);
+		}
+		printf("\n");
+	}
+	
+	for(int j = 0; j < Dataset.num_in; j++){
+		printf("----------\t");
+	}
+	printf("\n\n");
 }

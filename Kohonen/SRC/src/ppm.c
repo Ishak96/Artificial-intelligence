@@ -1,4 +1,4 @@
-#include "ppm.h"
+#include <ppm.h>
 
 void exit_on_error(const char *name_of_file, const char* name_of_function, int numero_of_line, const char * message)
 {
@@ -59,17 +59,3 @@ void writePPM(const char *filename, Image *img)
     fwrite(img->data, 3 * img->x, img->y, output_img); // data
     fclose(output_img);
 }
-
-/*int main()
-{
-	Image * img = NULL;
-    img = readPPM("45.ppm");
-    writePPM("sortie.ppm",img);
-    if (img != NULL)
-    {
-		free(img->data);
-        img->data = NULL;
-        free(img);
-        img = NULL ;
-    }
-}*/

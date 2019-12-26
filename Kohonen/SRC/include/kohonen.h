@@ -2,42 +2,58 @@
 #define KOHONEN_H
 
 #include <stdlib.h>
-#include<data.h>
+#include <math.h>
+#include <data.h>
+
+#define LEARNING_RATE  0.3
+
+#define LAMBDA		   0.5
+#define BETA		   0.2
+
+#define DVP			   1
+#define DVN			   2
+#define NEIGHBOUR_DIST 4
+
+#define MIN_R		   50
+#define MAX_R		   750
 
 typedef struct {
     double *weights;
     int x, y;
     int num_weights;
+    double pot,act;
 }Neuron;
 
 typedef struct {
     Neuron *lattice;
     int latice_size;
-    double mapRadius;
-    int sideX, sideY; 
-    int scale;
+    int sideX, sideY;
 }Map;
 
 double min_dbl(double a, double b);
 
 double max_dbl(double a, double b);
 
+double Q1(int dist);
+
 void init_neuron(Neuron *n, int x, int y, int num_weights);
 
-Map* init_map(int xSize, int ySize, int num_Weights, int scale);
+Map* init_map(int xSize, int ySize, int num_Weights);
 
 void distroyNeuron(Neuron *n);
 
 void distroyMap(Map* map);
 
-double neuron_distance(Neuron *n, double *inputs);
+void dump_NEURON(Neuron neuron);
 
-int neuron_distance_to(Neuron *src, Neuron *dst);
+void dump_MAP(Map* map);
 
-Neuron* find_bmu(Map *m, double *inputs);
+double neuron_distance(Neuron n, double *inputs);
 
-void adjust_weights(Neuron *n, double *inputs, double epsilon, double theta);
+void MAP_activation(Map* map, DATA data);
 
-double distance_between_weights(Neuron *src, Neuron *dst);
+int find_bmu(Map *m);
+
+void adjust_weights(Map* map, int bmu, DATA data);
 
 #endif
