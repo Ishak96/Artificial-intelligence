@@ -1,5 +1,5 @@
 # name of output program
-TARGET=base_opengl
+TARGET=Kohonen_2MODE
 
 CC=gcc
 
@@ -37,7 +37,7 @@ $(OBJECTS): $(OBJDIR)/%.o : $(SRCDIR)/%.c
 test: $(TESTBINS)
 
 $(TESTBINS): $(TESTOBJ) $(OBJECTS)
-	$(CC) $(filter-out obj/base_opengl.o $(filter-out $(patsubst $(BINDIR)/%,$(OBJDIR)/%.o,$@), $(TESTOBJ)), $(OBJECTS) $(TESTOBJ)) -o $@ $(LFLAGS)
+	$(CC) $(filter-out obj/Kohonen_2MODE.o $(filter-out $(patsubst $(BINDIR)/%,$(OBJDIR)/%.o,$@), $(TESTOBJ)), $(OBJECTS) $(TESTOBJ)) -o $@ $(LFLAGS)
 
 $(TESTOBJ): $(TESTS)
 	$(CC) $(CFLAGS) -c $(patsubst $(OBJDIR)/%.o,$(TESTDIR)/%.c,$@) -o $@

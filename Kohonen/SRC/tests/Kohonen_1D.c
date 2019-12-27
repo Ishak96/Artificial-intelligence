@@ -23,6 +23,9 @@
 #define SHIFT_X		   100
 #define SHIFT_Y		   100
 
+#define MIN_R		   50
+#define MAX_R		   750
+
 /*Variables globales*/
 TRAINING_DATA Dataset;
 Map* NeuronSet;
@@ -158,7 +161,7 @@ void idle() {
 			i_bum = find_bmu(NeuronSet);
 
 			adjust_weights(NeuronSet, i_bum, sDATA);
-			sleep(1);
+			sleep(0.5);
 		}
 		else{
 			printf("Tous les données ont été visité -> FIN !!\n");
@@ -184,7 +187,7 @@ int main(int argc, char** argv){
 	srand(time(NULL));
 
 
-	NeuronSet = init_map(MAP_SIZE_X, MAP_SIZE_Y, NUM_WEIGHT);
+	NeuronSet = init_map(MAP_SIZE_X, MAP_SIZE_Y, NUM_WEIGHT, MIN_R, MAX_R);
 	InitialiseSet(&Dataset, DATA_SIZE, DATA_NUM_IN, MIN, MAX);
 	sDATA = SortData(Dataset);
 

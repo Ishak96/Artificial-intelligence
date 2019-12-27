@@ -14,9 +14,6 @@
 #define DVN			   2
 #define NEIGHBOUR_DIST 4
 
-#define MIN_R		   50
-#define MAX_R		   750
-
 typedef struct {
     double *weights;
     int x, y;
@@ -36,9 +33,9 @@ double max_dbl(double a, double b);
 
 double Q1(int dist);
 
-void init_neuron(Neuron *n, int x, int y, int num_weights);
+void init_neuron(Neuron *n, int x, int y, int num_weights, float MIN_R, float MAX_R);
 
-Map* init_map(int xSize, int ySize, int num_Weights);
+Map* init_map(int sideX, int sideY, int num_weights, float MIN_R, float MAX_R);
 
 void distroyNeuron(Neuron *n);
 

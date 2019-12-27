@@ -9,7 +9,7 @@ double max_dbl(double a, double b) {
 }
 
 double Q1(int dist){
-	if(dist < 1){
+	if(dist == 0){
 		return 1;
 	} else if(dist < 2){
 		return LAMBDA;
@@ -22,7 +22,7 @@ double Q1(int dist){
 	return 0;
 }
 
-void init_neuron(Neuron *n, int x, int y, int num_weights){
+void init_neuron(Neuron *n, int x, int y, int num_weights, float MIN_R, float MAX_R){
 	n->x = x; n->y = y;
 	n->num_weights = num_weights;
 	n->weights = malloc(num_weights * sizeof(double));
@@ -35,7 +35,7 @@ void init_neuron(Neuron *n, int x, int y, int num_weights){
 	}
 }
 
-Map* init_map(int sideX, int sideY, int num_weights) {
+Map* init_map(int sideX, int sideY, int num_weights, float MIN_R, float MAX_R){
 
 	Map *map = malloc(sizeof(Map));
 	map->latice_size = sideX * sideY;
@@ -45,7 +45,7 @@ Map* init_map(int sideX, int sideY, int num_weights) {
 
 	for(int y = 0; y < sideY; ++y) {
 		for(int x = 0; x < sideX; ++x) {
-			init_neuron(map->lattice+y*sideX+x, x, y, num_weights);
+			init_neuron(map->lattice+y*sideX+x, x, y, num_weights, MIN_R, MAX_R);
 		}
 	}
 	

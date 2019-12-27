@@ -9,17 +9,33 @@
 #define DEFAULT_WIDTH  500
 #define DEFAULT_HEIGHT 500
 
-#define LATICE_SIZE	   50
-#define MAP_SIZE_X	   50
+#define MODE 1
+
+#if MODE
+	#define LATICE_SIZE	   50
+
+	#define MIN_R		   50
+	#define MAX_R		   750
+#else
+	#define LATICE_SIZE	   20
+
+	#define MIN_R		   -50
+	#define MAX_R		   50
+#endif
+
+#define MAP_SIZE_X	   LATICE_SIZE
 #define MAP_SIZE_Y	   1
 
-#define DATA_SIZE	   1
+#define DATA_SIZE	   20
 #define DATA_NUM_IN	   2
 
 #define NUM_WEIGHT	   2
 
-#define MIN_R		   50
-#define MAX_R		   750
+#define MAX 		   100
+#define MIN 		   0
+
+#define SHIFT_X		   100
+#define SHIFT_Y		   100
 
 /*Variables globales*/
 TRAINING_DATA Dataset;
@@ -140,8 +156,6 @@ void draw_map(){
 	Neuron* lattice = NeuronSet->lattice;
 	int size = NeuronSet->latice_size;
 
-	glPointSize(10); 
-	glLineWidth(2);
 	for(int i = 0; i < size; i++){
 			x = lattice[i].weights[0];
 			y = lattice[i].weights[1];
@@ -149,10 +163,26 @@ void draw_map(){
 			neighbour_i = (i != size-1) ? i+1 : 0;
 
 			glBegin(GL_POINTS);
-				if(i == i_bum)
-					glColor3f(0.0,1.0,0.0);
+				float pot = lattice[i].pot;
+				if(pot < 10)
+					glColor3f(255,0,0);
+				else if(pot < 20)
+					glColor3f(255,128,0);
+				else if(pot < 30)
+					glColor3f(255,255,0);
+				else if(pot < 40)
+					glColor3f(128,255,0);
+				else if(pot < 50)
+					glColor3f(0,255,0);
+				else if(pot < 60)
+					glColor3f(0,255,128);
+				else if(pot < 70)
+					glColor3f(0,255,255);
+				else if(pot < 80)
+					glColor3f(0,128,255);
 				else
-					glColor3f(1.0,0.0,0.0);
+					glColor3f(0,0,255);
+
 				glVertex2f(x,y);
 			glEnd();
 
@@ -169,41 +199,71 @@ void draw_map(){
 	}
 }
 
+/* fonction d'affichage appelée a chaque refresh*/
 void affichage(){
-	glColor3f(1.0, 1.0, 1.0);
-		glBegin(GL_QUADS);
-		glTexCoord2i(0, 0); glVertex2i(0,   0);
-		glTexCoord2i(0, 1); glVertex2i(0,   height);
-		glTexCoord2i(1, 1); glVertex2i(width, height);
-		glTexCoord2i(1, 0); glVertex2i(width, 0);
-	glEnd();
-	
-	glPointSize(15); 
-	for (int i = 0; i < NB_VILLE; i++){
-		glBegin(GL_POINTS);
-			glColor3f(0.0, 0.0, 0.0);
-			glVertex2f(citys[i].x, citys[i].y);
+	#if MODE
+		glColor3f(1.0, 1.0, 1.0);
+			glBegin(GL_QUADS);
+			glTexCoord2i(0, 0); glVertex2i(0,   0);
+			glTexCoord2i(0, 1); glVertex2i(0,   height);
+			glTexCoord2i(1, 1); glVertex2i(width, height);
+			glTexCoord2i(1, 0); glVertex2i(width, 0);
 		glEnd();
 		
-		glColor3f(0, 0, 0);
-			draw_text(citys[i].x - 20, citys[i].y + 20, "%s", citys[i].name);
-	}
+		glPointSize(15); 
+		for (int i = 0; i < NB_VILLE; i++){
+			glBegin(GL_POINTS);
+				glColor3f(0.0, 0.0, 0.0);
+				glVertex2f(citys[i].x, citys[i].y);
+			glEnd();
+			
+			glColor3f(0, 0, 0);
+				draw_text(citys[i].x - 20, citys[i].y + 20, "%s", citys[i].name);
+		}
+		
+		draw_map();
 
-	glColor3f(0.0,0.0,0.0);
-	draw_text(60, 70, "nb iter: %d", cpt);
+		glColor3f(0.0,0.0,0.0);
+		draw_text(60, 70, "nb iter: %d", cpt);
+	#else
+		glTranslatef(SHIFT_X, SHIFT_Y, 0);
+			glBegin(GL_POINTS);
+				glColor3f(1.0,1.0,1.0);
+				glVertex2f(sDATA.input[0],sDATA.input[1]);
+			glEnd();
+			
+			draw_map();
+		glTranslatef(-SHIFT_X, -SHIFT_Y, 0);
+		glColor3f(1.0,1.0,1.0);
+		draw_text(150, 20, "nb iter: %d", cpt);
+	#endif
 }
 
-/* Initialize OpenGL Graphics */
 void init(int w, int h){
 
+	#if MODE
+		int taille_point = 15;
+	#else
+		int taille_point = 10;
+	#endif
+
+	int line_width = 4;
+	
 	glViewport(0, 0, w, h);
 	glEnable(GL_TEXTURE_2D);
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 
-  	glOrtho(0.0, w, h, 0.0, -1, 1);
- 
+	#if MODE
+		glOrtho(0.0, w, h, 0.0, -1, 1);
+	#else
+		glOrtho(0.0, 200, 200, 0.0, -1, 1);
+	#endif
+
+
+	glPointSize(taille_point); 
+	glLineWidth(line_width);
 	glMatrixMode(GL_MODELVIEW);
 
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -212,11 +272,21 @@ void init(int w, int h){
 }
 
 void reshape(int h, int w){
-	glViewport(0, 0,h ,w);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
+	#if MODE
+	#else
+		width = w;
+		height = h;
+	#endif
 
-	glOrtho(0.0, width, height, 0.0, -1, 1);
+	glViewport(0, 0,w ,h);
+  	glMatrixMode(GL_PROJECTION);
+  	glLoadIdentity();
+
+  	#if MODE
+  		glOrtho(0.0, width, height, 0.0, -1, 1);
+  	#else
+  		glOrtho(0.0, 200, 200, 0.0, -1, 1);
+  	#endif
 
 	glMatrixMode(GL_MODELVIEW);
 
@@ -228,23 +298,34 @@ void display(void){
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();	
 		affichage();
-		draw_map();
 	glFlush();
 	glutSwapBuffers();
 }
 
-void idle() {
+void idle(){
 	if(calc){
 		cpt++;
-
 			sDATA = SortData(Dataset);
-			
+	
 			MAP_activation(NeuronSet, sDATA);
 
 			i_bum = find_bmu(NeuronSet);
 
 			adjust_weights(NeuronSet, i_bum, sDATA);
-    	
+			
+			#if MODE
+				sleep(0.5);
+			#else
+				sleep(1);
+			#endif
+
+			#if MODE
+			#else
+				if(DataSorted(Dataset)){
+					printf("Tous les données ont été visité -> FIN !!\n");
+					calc = !calc;
+				}
+			#endif
     	glutPostRedisplay();
   	}
 }
@@ -262,12 +343,20 @@ void clavier(unsigned char touche, int x, int y) {
 
 int main(int argc, char **argv){
 
-	unsigned char * data = NULL;
-	if (argc != 2) 
-		EXIT_ON_ERROR("You must specified a .ppm file");
-	data = transform_img_to_vector(argv[1], &width, &height);
+	srand(time(NULL));
+
+	#if MODE
+		unsigned char * data = NULL;
+		if (argc != 2) 
+			EXIT_ON_ERROR("You must specified a .ppm file");
+		data = transform_img_to_vector(argv[1], &width, &height);
 	
-	load_cities();
+		load_cities();
+	#else
+		InitialiseSet(&Dataset, DATA_SIZE, DATA_NUM_IN, MIN, MAX);
+		sDATA = SortData(Dataset);
+	#endif
+
 	NeuronSet = init_map(MAP_SIZE_X, MAP_SIZE_Y, NUM_WEIGHT, MIN_R, MAX_R);
 
 	glutInit(&argc, argv);
@@ -282,15 +371,19 @@ int main(int argc, char **argv){
 
 	init(width, height);
 
-	textureID = charger_texture(data);
-	if(data != NULL){
-		free(data);
-		data = NULL;
-	}
+	#if MODE
+		textureID = charger_texture(data);
+		if(data != NULL){
+			free(data);
+			data = NULL;
+		}
+	#endif
 
 	glutMainLoop();
 
-	glDeleteTextures(1, &textureID);
+	#if MODE
+		glDeleteTextures(1, &textureID);
+	#endif
 
   return 0;
 }
