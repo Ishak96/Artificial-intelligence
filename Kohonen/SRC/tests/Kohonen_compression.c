@@ -29,7 +29,8 @@ Map* NeuronSet;
 Image* imageOriginal;
 
 int cpt = 0;
-int calc = -1;
+int calc = 0;
+int comp = 0;
 
 TRAINING_DATA convertImageToDataTrain(Image* image){
 	int sizeX = image->x;
@@ -166,19 +167,26 @@ void idle(){
 
    		glutPostRedisplay();
   	}
-  	else{
+  	else if(comp){
 		Image* imageCompressee = IMAGECompressee(NeuronSet, imageOriginal);
 
 		writePPM("imageCompressee.ppm", imageCompressee);
 		free(imageCompressee->data);
 		free(imageCompressee);
+		comp = !comp;
   	}
 }
 
 void clavier(unsigned char touche, int x, int y) {
   switch (touche){
 	case 'p':
-		calc = (calc == -1) ? 0 : !calc;
+		calc = !calc;
+		comp = 0;
+	break;
+
+	case 'c':
+		calc = 0;
+		comp = 1;
 	break;
 
 	case 'q':
