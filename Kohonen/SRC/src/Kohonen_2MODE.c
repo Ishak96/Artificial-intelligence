@@ -9,7 +9,7 @@
 #define DEFAULT_WIDTH  800
 #define DEFAULT_HEIGHT 800
 
-#define MODE 0
+#define MODE 1
 
 #if MODE
 	#define LATICE_SIZE	   50
