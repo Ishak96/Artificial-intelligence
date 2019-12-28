@@ -2,17 +2,34 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <unistd.h>
+#include <GL/glut.h>
 #include <ppm.h>
 #include <kohonen.h>
 
+#define height  800
+#define width 	800
+
 #define NUM_WEIGHT 	   3
 #define MIN_R	   	   0
-#define MAX_R	   	   255
+#define MAX_R	   	   256
 
-#define LATICE_SIZE	   16
+#define LATICE_SIZE	   256
 
-#define MAP_SIZE_X	   LATICE_SIZE
-#define MAP_SIZE_Y	   1
+#define MAP_SIZE_X	   sqrt(LATICE_SIZE)
+#define MAP_SIZE_Y	   MAP_SIZE_X
+
+#define rows 		   sqrt(LATICE_SIZE)
+#define cols  		   rows
+
+int caseHeight = height/rows;
+int caseWidth  = width/cols;
+
+TRAINING_DATA Dataset;
+Map* NeuronSet;
+Image* imageOriginal;
+
+int cpt = 0;
+int calc = -1;
 
 TRAINING_DATA convertImageToDataTrain(Image* image){
 	int sizeX = image->x;
@@ -77,18 +94,63 @@ Image* IMAGECompressee(Map* n, Image* imageOriginal){
 	return image;
 }
 
-int main(int argc, char **argv){
-	TRAINING_DATA Dataset;
-	Map* NeuronSet;
+/*OpenGL*/
+void draw_text(float x, float y, const char *fmt, ...){
+	char    buf[1024];
+	char    *text = buf;
+	va_list ap;
 
-	if (argc != 2) 
-		EXIT_ON_ERROR("You must specified a .ppm file");
-	Image* imageOriginal = readPPM(argv[1]);
+	if(fmt == NULL)
+		return;
 
-	NeuronSet = init_map(MAP_SIZE_X, MAP_SIZE_Y, NUM_WEIGHT, MIN_R, MAX_R);
-	Dataset = convertImageToDataTrain(imageOriginal);
+	va_start(ap, fmt);
+	vsprintf(text, fmt, ap);
+	va_end(ap);
 
-	for(int i = 0; i < 1000; i++){
+	glDisable(GL_TEXTURE_2D);
+	glRasterPos2i(x, y);
+	while (*text)
+		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, *text++);
+
+	glEnable(GL_TEXTURE_2D);
+}
+
+void affichage(){
+	for(int i = 0; i < rows; i++){
+		for(int j = 0; j < cols; j++){
+			glBegin(GL_QUADS);
+				glColor3f(NeuronSet->lattice[i*(int)cols+j].weights[0]/256.0,
+						  NeuronSet->lattice[i*(int)cols+j].weights[1]/256.0,
+						  NeuronSet->lattice[i*(int)cols+j].weights[2]/256.0);
+
+				glVertex2d(j*caseWidth,i*caseHeight);
+				glVertex2d((j+1)*caseWidth,i*caseHeight);
+				glVertex2d((j+1)*caseWidth,(i+1)*caseHeight);
+				glVertex2d(j*caseWidth,(i+1)*caseHeight);
+			glEnd();
+		}
+	}
+	glColor3f(0.0,0.0,0.0);
+	draw_text(230, 20, "nb iter: %d", cpt);
+}
+
+void init(void){
+	glClearColor(0.0,0.0,0.0,0.0);
+    glViewport(0, 0, 800, 800);
+    glMatrixMode(GL_PROJECTION); 
+    glLoadIdentity();
+    glOrtho(0, 800, 0, 800, 1, -1);
+}
+
+void display(void){
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		affichage();
+	glFlush();
+}
+
+void idle(){
+	if(calc){
+		cpt++;
 		DATA sDATA = SortUnselectedData(&Dataset);
 
 		MAP_activation(NeuronSet, sDATA);
@@ -96,15 +158,60 @@ int main(int argc, char **argv){
 		int i_bum = find_bmu(NeuronSet);
 
 		adjust_weights(NeuronSet, i_bum, sDATA);
+			
+		if(DataSorted(Dataset)){
+			printf("Tous les données ont été visité -> FIN !!\n");
+			calc = !calc;
+		}
+
+   		glutPostRedisplay();
+  	}
+  	else{
+		Image* imageCompressee = IMAGECompressee(NeuronSet, imageOriginal);
+
+		writePPM("imageCompressee.ppm", imageCompressee);
+		free(imageCompressee->data);
+		free(imageCompressee);
+  	}
+}
+
+void clavier(unsigned char touche, int x, int y) {
+  switch (touche){
+	case 'p':
+		calc = (calc == -1) ? 0 : !calc;
+	break;
+
+	case 'q':
+		exit(0);
 	}
+}
 
-	Image* imageCompressee = IMAGECompressee(NeuronSet, imageOriginal);
+int main(int argc, char **argv){
+	
+	srand(time(NULL));
 
-	writePPM("imageCompressee.ppm", imageCompressee);
+	if (argc != 2) 
+		EXIT_ON_ERROR("You must specified a .ppm file");
+	imageOriginal = readPPM(argv[1]);
+
+	NeuronSet = init_map((int)MAP_SIZE_X, (int)MAP_SIZE_Y, NUM_WEIGHT, MIN_R, MAX_R);
+	Dataset = convertImageToDataTrain(imageOriginal);
+
+	glutInit(&argc, argv);
+	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH);
+	glutInitWindowSize(width,height);
+	glutInitWindowPosition(900, 100);	
+	glutCreateWindow("Kohonen compression");
+
+	init();
+
+	glutDisplayFunc(display);
+	glutIdleFunc(idle);
+	glutKeyboardFunc(clavier);
+
+	glutMainLoop();
 
 	free(imageOriginal->data);
-	free(imageCompressee->data);
 	free(imageOriginal);
-	free(imageCompressee);
 	return 0;
 }
