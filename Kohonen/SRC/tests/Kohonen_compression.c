@@ -13,7 +13,9 @@
 #define MIN_R	   	   0
 #define MAX_R	   	   256
 
-#define LATICE_SIZE	   256
+#define SIZE 		   16
+
+#define LATICE_SIZE	   SIZE*SIZE
 
 #define MAP_SIZE_X	   sqrt(LATICE_SIZE)
 #define MAP_SIZE_Y	   MAP_SIZE_X
