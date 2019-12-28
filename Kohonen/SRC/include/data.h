@@ -41,6 +41,8 @@ int DataSorted(TRAINING_DATA dataSet);
 
 DATA SortData(TRAINING_DATA dataSet);
 
+DATA SortUnselectedData(TRAINING_DATA* dataSet);
+
 void dump_DATASET(TRAINING_DATA Dataset);
 
 #endif

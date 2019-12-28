@@ -6,10 +6,10 @@
 #include <ppm.h>
 #include <kohonen.h>
 
-#define DEFAULT_WIDTH  500
-#define DEFAULT_HEIGHT 500
+#define DEFAULT_WIDTH  800
+#define DEFAULT_HEIGHT 800
 
-#define MODE 1
+#define MODE 0
 
 #if MODE
 	#define LATICE_SIZE	   50
@@ -31,11 +31,11 @@
 
 #define NUM_WEIGHT	   2
 
-#define MAX 		   100
+#define MAX 		   200
 #define MIN 		   0
 
-#define SHIFT_X		   100
-#define SHIFT_Y		   100
+#define SHIFT_X		   250
+#define SHIFT_Y		   250
 
 /*Variables globales*/
 TRAINING_DATA Dataset;
@@ -235,7 +235,7 @@ void affichage(){
 			draw_map();
 		glTranslatef(-SHIFT_X, -SHIFT_Y, 0);
 		glColor3f(1.0,1.0,1.0);
-		draw_text(150, 20, "nb iter: %d", cpt);
+		draw_text(230, 20, "nb iter: %d", cpt);
 	#endif
 }
 
@@ -285,7 +285,7 @@ void reshape(int h, int w){
   	#if MODE
   		glOrtho(0.0, width, height, 0.0, -1, 1);
   	#else
-  		glOrtho(0.0, 200, 200, 0.0, -1, 1);
+  		glOrtho(0.0, 500, 500, 0.0, -1, 1);
   	#endif
 
 	glMatrixMode(GL_MODELVIEW);
@@ -362,7 +362,7 @@ int main(int argc, char **argv){
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE);
 	glutInitWindowSize(width, height);
-	glutCreateWindow("Kohonen plus court chemin");
+	glutCreateWindow("Kohonen");
 
 	glutDisplayFunc(display);
 	glutReshapeFunc(reshape);

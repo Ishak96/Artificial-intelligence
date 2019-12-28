@@ -82,6 +82,23 @@ DATA SortData(TRAINING_DATA dataSet){
 	return dataS;
 }
 
+DATA SortUnselectedData(TRAINING_DATA* dataSet){
+	DATA dataS;
+	int find = 0;
+
+	while(!find){
+		int i = rand()%dataSet->size;
+
+		if(!dataSet->entries[i].drawn){
+			dataS = dataSet->entries[i];
+			dataSet->entries[i].drawn = 1;
+			find = 1;
+		}
+	}
+
+	return dataS;
+}
+
 void dump_DATASET(TRAINING_DATA Dataset){
 	for(int i = 0; i < Dataset.size; i++){
 		printf("         DRAWN[%d]\n", Dataset.entries[i].drawn);
