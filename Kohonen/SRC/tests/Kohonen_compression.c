@@ -13,7 +13,9 @@
 #define MIN_R	   	   0
 #define MAX_R	   	   256
 
-#define SIZE 		   16
+#define NB_COLOR	   32
+
+#define SIZE 		   NB_COLOR/2
 
 #define LATICE_SIZE	   SIZE*SIZE
 
