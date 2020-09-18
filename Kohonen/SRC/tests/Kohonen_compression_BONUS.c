@@ -13,7 +13,7 @@
 #define MIN_R	   	   0
 #define MAX_R	   	   256
 
-#define NB_COLOR	   16
+#define NB_COLOR	   32
 
 #define SIZE 		   NB_COLOR/2
 
@@ -44,9 +44,10 @@ TRAINING_DATA convertImageToDataTrain(Image* image){
 	init_TRAINING_DATA(&Dataset, sizeX*sizeY, NUM_WEIGHT);
 	for(int i = 0; i < sizeY; i++){
 		for(int j = 0; j < sizeX; j++){
-			Dataset.entries[i*sizeX+j].input[0] = image->data[i*sizeX+j].r;
-			Dataset.entries[i*sizeX+j].input[1] = image->data[i*sizeX+j].g;
-			Dataset.entries[i*sizeX+j].input[2] = image->data[i*sizeX+j].b;
+			float scale = (i != 0 && j != 0) ? (j/i) : 0.f;
+			Dataset.entries[i*sizeX+j].input[0] = image->data[i*sizeX+j].r + scale;
+			Dataset.entries[i*sizeX+j].input[1] = image->data[i*sizeX+j].g + scale;
+			Dataset.entries[i*sizeX+j].input[2] = image->data[i*sizeX+j].b + scale;
 		}
 	}
 
